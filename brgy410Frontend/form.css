@@ -1,0 +1,25 @@
+<style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffeef8; /* Light pink background */
+    }
+    .form-container {
+      border: 2px solid #ff69b4; /* Hot pink border */
+      background-color: #fff; /* White background for the form */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .form-title {
+      color: #ff69b4; /* Hot pink title */
+    }
+    .submit-button {
+      background-color: #ff69b4; /* Hot pink button */
+      color: white;
+    }
+    .submit-button:hover {
+      background-color: #ff1493; /* Darker pink on hover */
+    }
+    .input-border {
+      border-bottom: 2px solid #ff69b4; /* Hot pink input border */
+    }
+  </style>
+</head>
