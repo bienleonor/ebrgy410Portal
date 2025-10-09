@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/UseAuth";
-import barangaylogo from "../../assets/Barangaylogo.svg";
+import barangaylogo from "../../assets/brgy410.png";
 import { Home, Bell, FileText, LogOut } from "lucide-react";
 
 const ResidentSidebar = () => {

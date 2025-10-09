@@ -8,7 +8,7 @@ import AlertBox from "../components/common/AlertBox";
 export default function AdminRegister() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: "", email: "", password: "", role: 1 });
+  const [form, setForm] = useState({ username: "", email: "", password: "", role: 7 });
   const [alert, setAlert] = useState({ message: "", type: "success" });
 
   const handleChange = (e) => {
@@ -36,18 +36,6 @@ export default function AdminRegister() {
           <TextInput name="username" placeholder="Username" value={form.username} onChange={handleChange} required/>
           <TextInput name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required/>
           <TextInput name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange} required/>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Role</label>
-            <select name="role" value={form.role} onChange={handleChange} className="w-full border border-base-200-dim rounded px-3 py-2">
-              <option value="1">Super Admin</option>
-              <option value="2">Chairman/Chairwoman</option>
-              <option value="3">Councilor</option>
-              <option value="4">Secretary</option>
-              <option value="5">Treasurer</option>
-              <option value="6">Staff</option>
-              <option value="7">Resident</option>
-            </select>
-          </div>
           <PrimaryButton text="Register" />
         </form>
         <p className="mt-4 text-sm">

@@ -61,9 +61,15 @@ export const login = async (req, res) => {
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) return res.status(401).json({ message: 'Invalid credentials' });
 
-    const token = generateToken(user.user_id);
-
+    // Fetch role name if needed
     const roleName = await findRoleNameById(user.role_id);
+
+    // ✅ Generate a token with complete user info
+    const token = generateToken({
+      user_id: user.user_id,
+      username: user.username,
+      role: roleName, // or roleName depending on how you check in allowRoles
+    });
 
     res.status(200).json({
       message: 'Login successful',
@@ -72,8 +78,8 @@ export const login = async (req, res) => {
         id: user.user_id,
         username: user.username,
         email: user.email,
-        role: roleName
-      }
+        role: roleName,
+      },
     });
   } catch (error) {
     console.error('Login error:', error);

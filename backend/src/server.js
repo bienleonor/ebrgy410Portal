@@ -11,9 +11,11 @@ import rateLimiter from './middleware/rateLimiter.js';
 import authRoutes from './routes/authRouter.js';
 import brgyOfficialRoutes from './routes/brgyOfficialRouter.js';
 import residentRoutes from './routes/residentRouter.js'
+import addressRoutes from "./routes/addressRouter.js";
+import adminResidentRoutes from "./routes/adminResidentRouter.js";
 
 //Middleware
-import authMiddleware from './middleware/AuthMiddleware.js';
+import authMiddleware from './middleware/authMiddleware.js';
 
 EventEmitter.defaultMaxListeners = 20;
 dotenv.config();
@@ -40,7 +42,10 @@ app.get('/', (req, res) => {
 // --- API Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/protected/brgyOfficials', authMiddleware, brgyOfficialRoutes);
-app.use('/api/resident', residentRoutes);
+app.use('/api/residents', residentRoutes);
+app.use("/api/address", addressRoutes);
+app.use('/api/admin', adminResidentRoutes);
+
 
 
 // --- Start Server ---

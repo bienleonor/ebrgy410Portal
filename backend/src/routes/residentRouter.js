@@ -1,9 +1,18 @@
-// routes/residentRoutes.js
 import { Router } from "express";
-import { addResident } from "../controllers/residentController.js";
+import {
+  addResident,
+  getMyResidentProfile,
+  updateMyResidentProfile,
+} from "../controllers/residentController.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import { allowRoles } from "../middleware/roleMiddleware.js";
 
 const router = Router();
 
-router.post("/", addResident);
+router.use(authMiddleware, allowRoles(["resident"]));
+
+router.get("/profile/me", getMyResidentProfile);
+router.post("/profile", addResident);
+router.put("/profile", updateMyResidentProfile);
 
 export default router;
