@@ -3,7 +3,8 @@ import ProtectedRoute from '../components/common/ProtectedRoute';
 import AdminLayout from '../components/layout/AdminLayout';
 import ResidentLayout from '../components/layout/ResidentLayout';
 import ResidentDashboard from '../pages/userPages/ResidentDashboard';
-import ResidentProfilePage from '../components/resident/ResidentProfilePage';
+import ResidentProfilePage from '../pages/userPages/ResidentProfilePage';
+import DocumentRequestPage from '../pages/userPages/DocumentRequestPage';
 
 const privateRoutesConfig = [
   {
@@ -25,6 +26,7 @@ const privateRoutesConfig = [
         children: [
           { path: '/resident/dashboard', element: <ResidentDashboard />},
           { path: '/resident/profile', element: <ResidentProfilePage />},
+          { path: '/resident/request-document', element: <DocumentRequestPage />},
         ]
       }
     ],

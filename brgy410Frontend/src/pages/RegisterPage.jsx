@@ -5,7 +5,7 @@ import TextInput from "../components/common/TextInput";
 import PrimaryButton from "../components/common/PrimaryButton";
 import AlertBox from "../components/common/AlertBox";
 
-export default function AdminRegister() {
+export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: "", email: "", password: "", role: 7 });
@@ -21,7 +21,7 @@ export default function AdminRegister() {
     const res = await register(form); 
     if (res.success) {
       setAlert({ message: "Registration successful! Redirecting to login...", type: "success" });
-      setTimeout(() => navigate("/AdminLogin"), 1500);
+      setTimeout(() => navigate("/Login"), 1500);
     } else {
       setAlert({ message: res.message, type: "error" });
     }
@@ -39,7 +39,7 @@ export default function AdminRegister() {
           <PrimaryButton text="Register" />
         </form>
         <p className="mt-4 text-sm">
-          Already have an account? <Link to="/AdminLogin" className="text-blue-500">Login</Link>
+          Already have an account? <Link to="/Login" className="text-blue-500">Login</Link>
         </p>
       </div>
     </div>

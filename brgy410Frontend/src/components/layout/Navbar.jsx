@@ -1,16 +1,16 @@
-import { useState, React } from 'react'
+// import { useState, React } from 'react'
 
 import galingatganda from '../../assets/galingatganda.png'
 import brgy410 from '../../assets/brgy410.png'
 import barangaylogo from '../../assets/Barangaylogo.svg'
-import dropdown from '../../assets/icoon-drop-down.svg'
+// import dropdown from '../../assets/icoon-drop-down.svg'
 
 import { Link } from 'react-router-dom'
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  // const [isOpen, setIsOpen] = useState(false);
 
-  const toggleDropdown = () => setIsOpen(prev => !prev);
+  // const toggleDropdown = () => setIsOpen(prev => !prev);
 
   return (
     <header className="bg-base-300 border-b border-base-content/10">
@@ -48,27 +48,21 @@ const Navbar = () => {
               </Link>
             </li>
 
-            {/* Dropdown */}
-            <li className="relative cursor-pointer">
-              <div onClick={toggleDropdown} className="inline-flex items-center select-none">
-                SERVICES
-                <img src={dropdown} alt="Dropdown" className="w-5 ml-2" />
-              </div>
-
-              {isOpen && (
-                <ul className="absolute bg-white border border-black mt-3 rounded z-50 min-w-[200px] shadow-lg">
-                  <li className="p-2 hover:bg-gray-200">
-                    <Link to="/OnlineRequestingDocuments">Online Requesting Document</Link>
-                  </li>
-                  <li className="p-2 hover:bg-gray-200">tba</li>
-                  <li className="p-2 hover:bg-gray-200">tba</li>
-                </ul>
-              )}
-            </li>
-
             <li>
               <Link to="/Contacts" className="hover:text-blue-600 transition">
                 CONTACT US
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/Login" className="hover:text-blue-600 transition">
+                LOGIN
+              </Link>
+            </li>
+            
+            <li>
+              <Link to="/Register" className="hover:text-blue-600 transition">
+                REGISTER
               </Link>
             </li>
 

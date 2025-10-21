@@ -10,11 +10,11 @@ const ResidentSidebar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/AdminLogin"); // redirect to login after logout
+    navigate("/Login"); // redirect to login after logout
   };
 
   return (        
-    <div className="h-full fixed top-0 left-0 bg-white shadow-md w-64 transition-all duration-300 z-40 flex flex-col">
+    <div className="mr-64 h-full fixed top-0 left-0 bg-white shadow-md w-64 transition-all duration-300 z-40 flex flex-col">
       <div className="flex items-center px-4 py-3 border-b">
         <img src={barangaylogo} alt="Logo" className="w-12 h-12" />
         <div className="ml-3">
@@ -44,9 +44,20 @@ const ResidentSidebar = () => {
           </Link>
         </li>
 
+
         <li>
           <Link
-            to="/resident/requests"
+            to="/resident/request-document"
+            className="flex items-center space-x-3 p-2 rounded-md hover:bg-pink-100"
+          >
+            <FileText className="w-5 h-5" />
+            <span>Request Document</span>
+          </Link>
+        </li>
+
+        <li>
+          <Link
+            to="/resident/myrequests"
             className="flex items-center space-x-3 p-2 rounded-md hover:bg-pink-100"
           >
             <FileText className="w-5 h-5" />

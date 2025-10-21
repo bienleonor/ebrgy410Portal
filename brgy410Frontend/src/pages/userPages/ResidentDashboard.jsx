@@ -5,54 +5,36 @@ import CommunityProgramsCard from "../../components/resident/CommunityProgramsCa
 import BarangayServicesCard from "../../components/resident/BarangayServicesCard";
 import CalendarCard from "../../components/resident/CalendarCard";
 import MapCard from "../../components/resident/MapCard";
+import { LogoCardWrapper } from "../../components/common/LogoCardWrapper";
 
 const ResidentDashboard = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-400 to-pink-500 p-6 text-gray-800">
-      {/* Top Header */}
+    <div className="w-full px-5 py-2 min-h-screen bg-gradient-to-b from-pink-500 to-pink-300">
 
-      {/* Main Container */}
-      <div className="flex-1 py-6 max-w-screen-xl w-full">
-        {/* Top Stats Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <InfoCard label="Total Residents" value="1,632" icon="users" />
-          <InfoCard label="Household Count" value="235" icon="home" />
-          <InfoCard label="My Requests" value="3 Pendings" icon="file-text" />
-          <InfoCard label="Ayuda ni Mayor" value="Announcement" icon="megaphone" />
-        </div>
+      <LogoCardWrapper className=" p-6 text-gray-800">
+        {/* Top Header */}
 
-        {/* Middle Section: My Records | Announcements | Barangay Services */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-          {/* My Records */}
-          <div className="col-span-1">
-            <MyRecordsCard />
+        {/* Main Container */}
+        <div className="flex-1 py-6 max-w-screen-xl w-full">
+          {/* Top Stats Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <InfoCard label="My Requests" value="3 Pendings" icon="file-text" />
           </div>
 
-          {/* Announcements */}
-          <div className="col-span-1">
-            <AnnouncementsCard />
-          </div>
+          {/* Middle Section: My Records | Announcements | Barangay Services */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+            {/* My Records */}
+            <div className="col-span-1">
+              <MyRecordsCard />
+            </div>
 
-          {/* Barangay Services */}
-          <div className="col-span-1">
-            <BarangayServicesCard />
+            {/* Barangay Services */}
+            <div className="col-span-1">
+              <BarangayServicesCard />
+            </div>
           </div>
         </div>
-
-        {/* Bottom Section: Community Programs | Calendar + Map */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Community Programs - spans 2 cols */}
-          <div className="col-span-1 lg:col-span-2">
-            <CommunityProgramsCard />
-          </div>
-
-          {/* Calendar + Map stacked on the right */}
-          <div className="col-span-1 space-y-4">
-            <CalendarCard />
-            <MapCard />
-          </div>
-        </div>
-      </div>
+      </LogoCardWrapper>
     </div>
   );
 };

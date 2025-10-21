@@ -5,7 +5,7 @@ import TextInput from "../components/common/TextInput";
 import PrimaryButton from "../components/common/PrimaryButton";
 import AlertBox from "../components/common/AlertBox";
 
-export default function Login() {
+export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -21,7 +21,6 @@ export default function Login() {
     staff: '/admin/dashboard',
     resident: '/resident/dashboard'
   };
-
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -48,7 +47,7 @@ export default function Login() {
   return (
     <div className="bg-base-200 flex items-center justify-center h-screen">
       <div className="bg-base-100 text-base-content p-8 rounded-lg shadow-xl shadow-cyan-950 w-96">
-        <h2 className="text-2xl font-bold mb-6">Admin Login</h2>
+        <h2 className="text-2xl font-bold mb-6">Login</h2>
         <AlertBox message={alert.message} type={alert.type} />
         <form onSubmit={handleSubmit}>
           <TextInput name="username" placeholder="Username" value={form.username} onChange={handleChange} />
@@ -56,7 +55,7 @@ export default function Login() {
           <PrimaryButton text="Login" />
         </form>
         <p className="mt-4 text-sm">
-          Don't have an account? <Link to="/AdminRegister" className="text-blue-500">Register</Link>
+          Don't have an account? <Link to="/Register" className="text-blue-500">Register</Link>
         </p>
       </div>
     </div>
