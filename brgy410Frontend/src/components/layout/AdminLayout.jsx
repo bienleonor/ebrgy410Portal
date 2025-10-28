@@ -6,7 +6,7 @@ const AdminLayout = () => {
     <div className='flex'>
       <AdminSideBar />
       <div className="">
-          <main className="ml-64 w-full min-h-screen">
+          <main className="ml-64 min-w-screen min-h-screen">
               <Outlet /> {/* Where the current route content goes */}
           </main>
       </div>

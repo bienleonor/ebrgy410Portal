@@ -3,6 +3,7 @@ import AxiosInstance from "../../utils/AxiosInstance";
 import TextInput from "../../components/common/TextInput";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import toast from "react-hot-toast";
+import { LogoCardWrapper } from "../../components/common/LogoCardWrapper";
 
 const ResidentProfilePage = () => {
   const [profile, setProfile] = useState(null);
@@ -172,104 +173,107 @@ const ResidentProfilePage = () => {
 
   // 📌 FORM
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">
-        {profile ? "Edit Resident Profile" : "Complete Your Profile"}
-      </h1>
+    <div className="p-5 max-w-4xl mx-auto">
+      <LogoCardWrapper className="drop-shadow-xl/50">
+        <h1 className="text-2xl font-bold mb-6">
+          {profile ? "Edit Resident Profile" : "Complete Your Profile"}
+        </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Personal Info */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <TextInput label="First Name" name="first_name" value={form.first_name} onChange={handleChange} required />
-          <TextInput label="Middle Name" name="middle_name" value={form.middle_name} onChange={handleChange} />
-          <TextInput label="Last Name" name="last_name" value={form.last_name} onChange={handleChange} required />
-          <TextInput label="Suffix" name="suffix" value={form.suffix} onChange={handleChange} />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Personal Info */}
+          <div className="bg-white/70 backdrop-blur-lg border-2 border-gray-800/30 rounded-2xl p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <TextInput label="First Name" name="first_name" value={form.first_name} onChange={handleChange} required />
+            <TextInput label="Middle Name" name="middle_name" value={form.middle_name} onChange={handleChange} />
+            <TextInput label="Last Name" name="last_name" value={form.last_name} onChange={handleChange} required />
+            <TextInput label="Suffix" name="suffix" value={form.suffix} onChange={handleChange} />
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Gender</label>
-            <select
-              name="gender"
-              value={form.gender}
+          <div className="bg-white/70 backdrop-blur-lg border-2 border-gray-800/30 rounded-2xl p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Gender</label>
+              <select
+                name="gender"
+                value={form.gender}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2"
+                required
+              >
+                <option value="">Select Gender</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+              </select>
+            </div>
+
+            <TextInput
+              label="Birth Date"
+              name="birth_date"
+              type="date"
+              value={form.birth_date ? form.birth_date.split("T")[0] : ""}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
               required
-            >
-              <option value="">Select Gender</option>
-              <option value="MALE">Male</option>
-              <option value="FEMALE">Female</option>
-            </select>
+            />
           </div>
 
-          <TextInput
-            label="Birth Date"
-            name="birth_date"
-            type="date"
-            value={form.birth_date ? form.birth_date.split("T")[0] : ""}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <TextInput label="Civil Status" name="civil_status" value={form.civil_status} onChange={handleChange} required />
-          <TextInput label="Nationality" name="nationality" value={form.nationality} onChange={handleChange} required />
-        </div>
-
-        <TextInput label="Occupation" name="occupation" value={form.occupation} onChange={handleChange} />
-        <TextInput label="Contact Number" name="contact_number" value={form.contact_number} onChange={handleChange} required />
-
-        <div className="flex items-center space-x-2">
-          <input type="checkbox" id="is_voter" name="is_voter" checked={form.is_voter} onChange={handleChange} />
-          <label htmlFor="is_voter">Registered Voter</label>
-        </div>
-
-        {/* Address Section */}
-        <h2 className="text-xl font-semibold mt-6 mb-2">Address Information</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <TextInput label="House Number" name="house_number" value={addressForm.house_number} onChange={handleAddressChange} required />
-          <TextInput label="Street" name="street" value={addressForm.street} onChange={handleAddressChange} required />
-          <TextInput label="Subdivision" name="subdivision" value={addressForm.subdivision} onChange={handleAddressChange} />
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Barangay</label>
-            <select
-              name="brgy_id"
-              value={addressForm.brgy_id}
-              onChange={handleAddressChange}
-              className="w-full border rounded px-3 py-2"
-              required
-            >
-              <option value="">Select Barangay</option>
-              {barangays.map((b) => (
-                <option key={b.brgy_id} value={b.brgy_id}>
-                  {b.barangay_name}
-                </option>
-              ))}
-            </select>
+          <div className="bg-white/70 backdrop-blur-lg border-2 border-gray-800/30 rounded-2xl p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <TextInput label="Civil Status" name="civil_status" value={form.civil_status} onChange={handleChange} required />
+            <TextInput label="Nationality" name="nationality" value={form.nationality} onChange={handleChange} required />
+          </div>
+          <div className="bg-white/70 backdrop-blur-lg border-2 border-gray-800/30 rounded-2xl p-5 ">
+            <TextInput label="Occupation" name="occupation" value={form.occupation} onChange={handleChange} />
+            <TextInput label="Contact Number" name="contact_number" value={form.contact_number} onChange={handleChange} required />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Purok / Sitio</label>
-            <select
-              name="purok_id"
-              value={addressForm.purok_id || ""}
-              onChange={handleAddressChange}
-              className="w-full border rounded px-3 py-2"
-            >
-              <option value="">None</option>
-              {puroks.map((p) => (
-                <option key={p.purok_id} value={p.purok_id}>
-                  {p.purok_name} {p.sitio_name ? `- ${p.sitio_name}` : ""}
-                </option>
-              ))}
-            </select>
+          <div className="rounded-2xl px-5 pb-5 flex items-center space-x-2">
+            <input type="checkbox" id="is_voter" name="is_voter" checked={form.is_voter} onChange={handleChange} />
+            <label htmlFor="is_voter">Registered Voter</label>
           </div>
-        </div>
 
-        <PrimaryButton text={profile ? "Update Profile" : "Save Profile"} />
-      </form>
+          {/* Address Section */}
+          <h2 className="text-xl font-semibold mt-6 mb-2">Address Information</h2>
+          <div className="bg-white/70 backdrop-blur-lg border-2 border-gray-800/30 rounded-2xl p-5  grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <TextInput label="House Number" name="house_number" value={addressForm.house_number} onChange={handleAddressChange} required />
+            <TextInput label="Street" name="street" value={addressForm.street} onChange={handleAddressChange} required />
+            <TextInput label="Subdivision" name="subdivision" value={addressForm.subdivision} onChange={handleAddressChange} />
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Barangay</label>
+              <select
+                name="brgy_id"
+                value={addressForm.brgy_id}
+                onChange={handleAddressChange}
+                className="w-full border rounded px-3 py-2"
+                required
+              >
+                <option value="">Select Barangay</option>
+                {barangays.map((b) => (
+                  <option key={b.brgy_id} value={b.brgy_id}>
+                    {b.barangay_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Purok / Sitio</label>
+              <select
+                name="purok_id"
+                value={addressForm.purok_id || ""}
+                onChange={handleAddressChange}
+                className="w-full border rounded px-3 py-2"
+              >
+                <option value="">None</option>
+                {puroks.map((p) => (
+                  <option key={p.purok_id} value={p.purok_id}>
+                    {p.purok_name} {p.sitio_name ? `- ${p.sitio_name}` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <PrimaryButton text={profile ? "Update Profile" : "Save Profile"} />
+        </form>
+    </LogoCardWrapper>
     </div>
   );
 };

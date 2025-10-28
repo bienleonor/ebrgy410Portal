@@ -1,37 +1,32 @@
+import { useEffect, useState } from "react";
+import AxiosInstance from "../../utils/AxiosInstance";
 import InfoCard from "../../components/common/InfoCard";
 import MyRecordsCard from "../../components/resident/MyRecordsCard";
-import AnnouncementsCard from "../../components/resident/AnnouncementCard";
-import CommunityProgramsCard from "../../components/resident/CommunityProgramsCard";
 import BarangayServicesCard from "../../components/resident/BarangayServicesCard";
-import CalendarCard from "../../components/resident/CalendarCard";
-import MapCard from "../../components/resident/MapCard";
 import { LogoCardWrapper } from "../../components/common/LogoCardWrapper";
+import { useOutletContext } from "react-router-dom";
 
 const ResidentDashboard = () => {
+  const { profile, address } = useOutletContext();
+
   return (
-    <div className="w-full px-5 py-2 min-h-screen bg-gradient-to-b from-pink-500 to-pink-300">
+    <div className="w-full px-5 pt-3">
+      <LogoCardWrapper className="p-6 text-gray-800">
+        <div className="text-center text-7xl font-semibold">
+          <h1>WELCOME BACK, {profile.first_name?.toUpperCase()}!</h1>
+        </div>
 
-      <LogoCardWrapper className=" p-6 text-gray-800">
-        {/* Top Header */}
-
-        {/* Main Container */}
         <div className="flex-1 py-6 max-w-screen-xl w-full">
-          {/* Top Stats Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <InfoCard label="My Requests" value="3 Pendings" icon="file-text" />
+            <InfoCard label="Approved Documents" value="2 Approved" icon="check" />
+            <InfoCard label="Pending Request" value="2 Pending" icon="clock" />
+            <InfoCard label="Notifications" value="2 Notifications" icon="bell" />
           </div>
 
-          {/* Middle Section: My Records | Announcements | Barangay Services */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-            {/* My Records */}
-            <div className="col-span-1">
-              <MyRecordsCard />
-            </div>
-
-            {/* Barangay Services */}
-            <div className="col-span-1">
-              <BarangayServicesCard />
-            </div>
+          <div className="flex flex-wrap gap-4">
+            <div className="flex-1"><MyRecordsCard user={profile} address={address} /></div>
+            <div className="flex-1"><BarangayServicesCard /></div>
           </div>
         </div>
       </LogoCardWrapper>

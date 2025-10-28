@@ -8,6 +8,7 @@ const ResidentSidebar = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
+
   const handleLogout = () => {
     logout();
     navigate("/Login"); // redirect to login after logout
@@ -15,13 +16,15 @@ const ResidentSidebar = () => {
 
   return (        
     <div className="mr-64 h-full fixed top-0 left-0 bg-white shadow-md w-64 transition-all duration-300 z-40 flex flex-col">
-      <div className="flex items-center px-4 py-3 border-b">
-        <img src={barangaylogo} alt="Logo" className="w-12 h-12" />
-        <div className="ml-3">
-          <h2 className="text-lg font-bold leading-tight">Barangay 410</h2>
-          <p className="text-sm text-gray-500">Zone 42</p>
+      <Link>
+        <div className="flex items-center px-4 py-3 border-b">
+          <img src={barangaylogo} alt="Logo" className="w-12 h-12" />
+          <div className="ml-3">
+            <h2 className="text-lg font-bold leading-tight">Barangay 410</h2>
+            <p className="text-sm text-gray-500">Zone 42</p>
+          </div>
         </div>
-      </div>
+      </Link>
 
       <ul className="flex-1 p-4 space-y-2 text-lg font-medium">
         <li>
@@ -33,18 +36,6 @@ const ResidentSidebar = () => {
             <span>Dashboard</span>
           </Link>
         </li>
-
-        <li>
-          <Link
-            to="/resident/announcements"
-            className="flex items-center space-x-3 p-2 rounded-md hover:bg-pink-100"
-          >
-            <Bell className="w-5 h-5" />
-            <span>Announcements</span>
-          </Link>
-        </li>
-
-
         <li>
           <Link
             to="/resident/request-document"
