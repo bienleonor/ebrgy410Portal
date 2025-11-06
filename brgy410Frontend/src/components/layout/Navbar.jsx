@@ -42,11 +42,6 @@ const Navbar = () => {
                 ABOUT US
               </Link>
             </li>
-            <li>
-              <Link to="/ResolutionandOrdinance" className="hover:text-blue-600 transition">
-                RESOLUTION & ORDINANCE
-              </Link>
-            </li>
 
             <li>
               <Link to="/Contacts" className="hover:text-blue-600 transition">

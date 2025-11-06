@@ -41,6 +41,7 @@
   --color-white-mute: oklch(0.3000 0 0 / 70.38%);
   --color-base-200-dim: oklch(0.3858 0.1285 249.39);
   --color-button-blue-light: oklch(0.8131 0.045 249.39);
+  --color-DocReq-Pink: #FFA2C4;
 }
 
 @layer base {

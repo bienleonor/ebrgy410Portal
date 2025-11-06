@@ -14,11 +14,7 @@ export default function LoginPage() {
 
   const roleRedirectMap = {
     superadmin: '/admin/dashboard',
-    chairman: '/admin/dashboard',
-    councilor: '/admin/dashboard',
-    secretary: '/admin/dashboard',
-    treasurer: '/admin/dashboard',
-    staff: '/admin/dashboard',
+    admin: '/admin/dashboard',
     resident: '/resident/dashboard'
   };
 
@@ -47,11 +43,11 @@ export default function LoginPage() {
   return (
     <div className="bg-base-200 flex items-center justify-center h-screen">
       <div className="bg-base-100 text-base-content p-8 rounded-lg shadow-xl shadow-cyan-950 w-96">
-        <h2 className="text-2xl font-bold mb-6">Login</h2>
+        <h2 className="text-2xl font-bold mb-2">Login</h2>
         <AlertBox message={alert.message} type={alert.type} />
         <form onSubmit={handleSubmit}>
-          <TextInput name="username" placeholder="Username" value={form.username} onChange={handleChange} />
-          <TextInput type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} />
+          <TextInput name="username" placeholder="Username" value={form.username} onChange={handleChange} className="mt-2"/>
+          <TextInput type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} className="my-3"/>
           <PrimaryButton text="Login" />
         </form>
         <p className="mt-4 text-sm">

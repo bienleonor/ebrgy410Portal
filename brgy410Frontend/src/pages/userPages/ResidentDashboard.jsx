@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
-import AxiosInstance from "../../utils/AxiosInstance";
-import InfoCard from "../../components/common/InfoCard";
+import InfoCard from "../../components/common/cards/InfoCard";
 import MyRecordsCard from "../../components/resident/MyRecordsCard";
-import BarangayServicesCard from "../../components/resident/BarangayServicesCard";
-import { LogoCardWrapper } from "../../components/common/LogoCardWrapper";
+import BarangayLatestActionCard from "../../components/resident/BarangayServicesCard";
+import { LogoCardWrapper } from "../../components/common/cards/LogoCardWrapper";
 import { useOutletContext } from "react-router-dom";
 
 const ResidentDashboard = () => {
@@ -26,7 +24,7 @@ const ResidentDashboard = () => {
 
           <div className="flex flex-wrap gap-4">
             <div className="flex-1"><MyRecordsCard user={profile} address={address} /></div>
-            <div className="flex-1"><BarangayServicesCard /></div>
+            <div className="flex-1"><BarangayLatestActionCard /></div>
           </div>
         </div>
       </LogoCardWrapper>

@@ -3,7 +3,7 @@ import AxiosInstance from "../../utils/AxiosInstance";
 import TextInput from "../../components/common/TextInput";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import toast from "react-hot-toast";
-import { LogoCardWrapper } from "../../components/common/LogoCardWrapper";
+import { LogoCardWrapper } from "../../components/common/cards/LogoCardWrapper";
 
 const ResidentProfilePage = () => {
   const [profile, setProfile] = useState(null);

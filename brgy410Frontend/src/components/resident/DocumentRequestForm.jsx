@@ -1,66 +1,97 @@
-import { useState } from 'react';
-import { DOCUMENT_TYPES, PURPOSE_OPTIONS } from '../../data/constant';
+import { useState, useEffect } from "react";
+import axiosInstance from "../../utils/AxiosInstance";
+import { PURPOSE_OPTIONS } from "../../data/constant";
+import PrimaryButton from "../common/PrimaryButton";
 
 const DocumentRequestForm = ({ onSubmit }) => {
-  const [documentType, setDocumentType] = useState('barangay_indigency');
-  const [purpose, setPurpose] = useState('');
-  const [otherPurpose, setOtherPurpose] = useState('');
+  const [certificateTypes, setCertificateTypes] = useState([]);
+  const [certificateTypeId, setCertificateTypeId] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [otherPurpose, setOtherPurpose] = useState("");
+  const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    const fetchCertificateTypes = async () => {
+      try {
+        const res = await axiosInstance.get("/certificates/types");
+        setCertificateTypes(res.data);
+      } catch (err) {
+        console.error("Failed to load certificate types:", err);
+      }
+    };
+    fetchCertificateTypes();
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const finalPurpose = purpose === 'Others' ? otherPurpose : purpose;
-    onSubmit({ documentType, purpose: finalPurpose });
+    const finalPurpose = purpose === "Others" ? otherPurpose : purpose;
+    onSubmit({ certificate_type_id: certificateTypeId, purpose: finalPurpose, quantity });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto p-4 bg-white shadow rounded space-y-4">
-      <div>
-        <label className="block mb-1 font-medium">Type of Document</label>
+    <form onSubmit={handleSubmit} className="w-full p-4 rounded-xl space-y-4">
+      {/* Certificate Type */}
+      <div className="flex items-baseline bg-DocReq-Pink rounded-4xl">
+        <label className="block mb-1 font-medium pl-7">Type of Document</label>
         <select
-          value={documentType}
-          onChange={(e) => setDocumentType(e.target.value)}
-          className="w-full border rounded px-3 py-2"
+          value={certificateTypeId}
+          onChange={(e) => setCertificateTypeId(e.target.value)}
+          required
+          className="w-200 border px-3 py-2 ml-auto rounded-4xl h-15 bg-white text-black/70"
         >
-          {DOCUMENT_TYPES.map((doc) => (
-            <option key={doc.value} value={doc.value}>{doc.label}</option>
+          <option value="">-- Select Type --</option>
+          {certificateTypes.map((type) => (
+            <option key={type.cert_type_id} value={type.cert_type_id}>
+              {type.name}
+            </option>
           ))}
         </select>
       </div>
 
-      <div>
-        <label className="block mb-1 font-medium">Purpose</label>
+      {/* Quantity */}
+      <div className="flex items-baseline bg-DocReq-Pink rounded-4xl">
+        <label className="block mb-1 font-medium pl-7">Quantity</label>
+        <input
+          type="number"
+          min="1"
+          value={quantity}
+          onChange={(e) => setQuantity(parseInt(e.target.value, 10))}
+          className="w-200 border px-3 py-2 ml-auto rounded-4xl h-15 bg-white text-black/70"
+        />
+      </div>
+
+      {/* Purpose */}
+      <div className="flex items-baseline bg-DocReq-Pink rounded-4xl">
+        <label className="block mb-1 font-medium pl-7">Purpose</label>
         <select
           value={purpose}
           onChange={(e) => setPurpose(e.target.value)}
-          className="w-full border rounded px-3 py-2"
+          required
+          className="w-200 border px-3 py-2 ml-auto rounded-4xl h-15 bg-white text-black/70"
         >
-          <option value="" disabled>Select purpose</option>
-          {PURPOSE_OPTIONS.map((option) => (
-            <option key={option} value={option}>{option}</option>
+          <option value="">-- Select Purpose --</option>
+          {PURPOSE_OPTIONS.map((opt) => (
+            <option key={opt} value={opt}>{opt}</option>
           ))}
         </select>
       </div>
 
-      {purpose === 'Others' && (
-        <div>
-          <label className="block mb-1 font-medium">Please specify</label>
+      {/* Other Purpose */}
+      {purpose === "Others" && (
+        <div className="flex items-baseline bg-DocReq-Pink rounded-4xl">
+          <label className="block mb-1 font-medium pl-7">Please specify</label>
           <input
             type="text"
             value={otherPurpose}
             onChange={(e) => setOtherPurpose(e.target.value)}
-            className="w-full border rounded px-3 py-2"
+            className="w-200 border px-3 py-2 ml-auto rounded-4xl h-15 bg-white text-black/70"
             placeholder="Enter other purpose"
             required
           />
         </div>
       )}
 
-      <button
-        type="submit"
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        Submit Request
-      </button>
+      <PrimaryButton type="submit" text="Submit Request" />
     </form>
   );
 };

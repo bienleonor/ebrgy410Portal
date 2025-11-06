@@ -5,12 +5,24 @@ import {
   deleteResident,
 } from "../controllers/residentController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
-import { allowRoles } from "../middleware/roleMiddleware.js";
+import { authorizeAccess } from "../middleware/accessControl.js";
 
 const router = Router();
 
-// Only allow admins and superadmins
-router.use(authMiddleware, allowRoles(["chairman/chairwoman", "superadmin", "councilor/kagawad", "secretary"]));
+// ✅ Allow both Admin roles and specific positions
+router.use(
+  authMiddleware,
+  authorizeAccess({
+    roles: ["Admin", "SuperAdmin"],
+    positions: [
+      "Chairman/Chairwoman",
+      "Secretary",
+      "Councilor/Kagawad",
+      "Treasurer",
+      "Staff",
+    ],
+  })
+);
 
 router.get("/residents", listAllResidents);
 router.get("/residents/:id", getResidentById);

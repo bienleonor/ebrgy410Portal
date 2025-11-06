@@ -45,6 +45,15 @@ const ResidentSidebar = () => {
             <span>Request Document</span>
           </Link>
         </li>
+        <li>
+          <Link
+            to="/resident/requestBrgyID"
+            className="flex items-center space-x-3 p-2 rounded-md hover:bg-pink-100"
+          >
+            <FileText className="w-5 h-5" />
+            <span>Request Barangay ID</span>
+          </Link>
+        </li>
 
         <li>
           <Link
@@ -55,6 +64,7 @@ const ResidentSidebar = () => {
             <span>My Requests</span>
           </Link>
         </li>
+
 
         <li>
           <button

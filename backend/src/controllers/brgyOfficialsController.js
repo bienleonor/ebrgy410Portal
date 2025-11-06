@@ -4,7 +4,7 @@ import {
   getBrgyOfficialById,
   updateBrgyOfficial,
   deleteBrgyOfficial
-} from '../models/BrgyOfficial.js';
+} from '../models/BrgyOfficialModel.js';
 
 export const getAllBrgyOfficialsController = async (_, res) => {
   try {

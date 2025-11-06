@@ -73,7 +73,7 @@ const ResidentLayout = () => {
 
         {/* Main content */}
         <main className="flex-1 ml-64 w-full bg-gradient-to-b from-pink-500 to-pink-100">
-          <Outlet context={{ profile, address, barangays, puroks }} />
+          <Outlet context={{ profile, address, barangays, puroks }}/>
         </main>
       </div>
     </div>

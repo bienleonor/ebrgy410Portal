@@ -24,7 +24,7 @@ const MyRecordsCard = ({ user = null, address = null }) => {
 
 
   return (
-    <div className="bg-white rounded-2xl shadow p-5">
+    <div className="bg-white border border-gray-800/30 rounded-2xl shadow p-5">
       {/* Personal Info */}
       <div className="rounded-lg p-4">
         <div className="flex items-center gap-5">

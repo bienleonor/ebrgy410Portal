@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { EventEmitter } from 'events';
-
+import path from "path";
 import pool from './config/pool.js';
 import rateLimiter from './middleware/rateLimiter.js';
 
@@ -13,6 +13,9 @@ import brgyOfficialRoutes from './routes/brgyOfficialRouter.js';
 import residentRoutes from './routes/residentRouter.js'
 import addressRoutes from "./routes/addressRouter.js";
 import adminResidentRoutes from "./routes/adminResidentRouter.js";
+import certificateRoutes from "./routes/certificateRoutes.js";
+import certificateTypeRoutes from "./routes/certificateTypeRoutes.js";
+
 
 //Middleware
 import authMiddleware from './middleware/authMiddleware.js';
@@ -45,7 +48,12 @@ app.use('/api/protected/brgyOfficials', authMiddleware, brgyOfficialRoutes);
 app.use('/api/residents', residentRoutes);
 app.use("/api/address", addressRoutes);
 app.use('/api/admin', adminResidentRoutes);
+app.use("/api/certificates/types", certificateTypeRoutes);
 
+// Securely serve files
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads"))); // ✅ works now
+
+app.use("/api/certificates", certificateRoutes);
 
 
 // --- Start Server ---
