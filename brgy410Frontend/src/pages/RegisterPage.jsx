@@ -8,7 +8,7 @@ import AlertBox from "../components/common/AlertBox";
 export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: "", email: "", password: "", role: 7 });
+  const [form, setForm] = useState({ username: "", email: "", password: "", role: 3 });
   const [alert, setAlert] = useState({ message: "", type: "success" });
 
   const handleChange = (e) => {
@@ -33,9 +33,9 @@ export default function RegisterPage() {
         <h2 className="text-2xl font-bold mb-6">Register</h2>
         <AlertBox message={alert.message} type={alert.type} />
         <form onSubmit={handleSubmit}>
-          <TextInput name="username" placeholder="Username" value={form.username} onChange={handleChange} required/>
-          <TextInput name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required/>
-          <TextInput name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange} required/>
+          <TextInput name="username" placeholder="Username" value={form.username} onChange={handleChange} className="mt-2" required/>
+          <TextInput name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} className="my-2" required/>
+          <TextInput name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange} className="mb-5" required/>
           <PrimaryButton text="Register" />
         </form>
         <p className="mt-4 text-sm">

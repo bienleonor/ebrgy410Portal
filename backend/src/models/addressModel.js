@@ -31,7 +31,7 @@ export const getProvinces = async () => {
   const [rows] = await pool.execute(
     `SELECT p.*, r.name AS region_name
      FROM provinces p
-     JOIN regions r ON p.region_id = r.region_id
+     JOIN regions r ON p.region_id = r.region_id 
      ORDER BY p.name ASC`
   );
   return rows;

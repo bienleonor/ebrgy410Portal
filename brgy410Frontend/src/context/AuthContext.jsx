@@ -44,12 +44,14 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const { token, user } = await loginService(credentials);
+      console.log("🧩 LoginService returned:", { token, user }); // add this line
       saveAuthData(token, user);
       setToken(token);
       setUser(user);
       setAutoLogout(token);
       return { success: true, user };
     } catch (error) {
+      console.error("❌ Login error:", error);
       return { success: false, message: error.response?.data?.message || 'Login failed' };
     }
   };

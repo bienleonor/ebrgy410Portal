@@ -8,13 +8,17 @@ import pool from './config/pool.js';
 import rateLimiter from './middleware/rateLimiter.js';
 
 // Routes
-import authRoutes from './routes/authRouter.js';
-import brgyOfficialRoutes from './routes/brgyOfficialRouter.js';
-import residentRoutes from './routes/residentRouter.js'
-import addressRoutes from "./routes/addressRouter.js";
-import adminResidentRoutes from "./routes/adminResidentRouter.js";
+import authRoutes from './routes/authRoutes.js';
+// import brgyOfficialRoutes from './routes/brgyOfficialRouter.js';
+import residentRoutes from './routes/residentRoutes.js'
+import addressRoutes from "./routes/addressRoutes.js";
+import adminResidentRoutes from "./routes/adminResidentRoutes.js";
 import certificateRoutes from "./routes/certificateRoutes.js";
 import certificateTypeRoutes from "./routes/certificateTypeRoutes.js";
+import certificateAttachmentRoutes from "./routes/certificateAttachmentRoutes.js";
+import positionRoutes from "./routes/positionRoutes.js";
+import statusRoutes from "./routes/statusRoutes.js";
+import brgyOfficialRoutes from "./routes/brgyOfficialRoutes.js";
 
 
 //Middleware
@@ -44,11 +48,15 @@ app.get('/', (req, res) => {
 
 // --- API Routes ---
 app.use('/api/auth', authRoutes);
-app.use('/api/protected/brgyOfficials', authMiddleware, brgyOfficialRoutes);
+app.use('/api/brgy-officials', brgyOfficialRoutes);
 app.use('/api/residents', residentRoutes);
 app.use("/api/address", addressRoutes);
 app.use('/api/admin', adminResidentRoutes);
 app.use("/api/certificates/types", certificateTypeRoutes);
+app.use("/api/certificate-attachments", certificateAttachmentRoutes);
+app.use("/api/positions", positionRoutes);
+app.use("/api/status", statusRoutes);
+
 
 // Securely serve files
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads"))); // ✅ works now

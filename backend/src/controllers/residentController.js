@@ -6,6 +6,44 @@ import {
   getResidentByIdFromDB,
   getAllResidents,
 } from "../models/residentModel.js";
+import bcrypt from "bcryptjs"; // Add this import at the top
+
+
+export const createResidentWithAccount = async (req, res) => {
+  const { username, email, password, role_name, first_name, middle_name, last_name, gender, address_id, contact_number, is_voter } = req.body;
+
+  const conn = await pool.getConnection();
+  await conn.beginTransaction();
+
+  try {
+    // 1️⃣ Create user account
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const [userResult] = await conn.execute(
+      `INSERT INTO users (username, email, password, role_name) VALUES (?, ?, ?, ?)`,
+      [username, email, hashedPassword, role_name || "resident"]
+    );
+    const user_id = userResult.insertId;
+
+    // 2️⃣ Create resident profile linked to that user_id
+    await conn.execute(
+      `INSERT INTO residents 
+       (user_id, first_name, middle_name, last_name, gender, address_id, contact_number, is_voter, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      [user_id, first_name, middle_name || null, last_name, gender, address_id, contact_number, is_voter || 0]
+    );
+
+    await conn.commit();
+    res.status(201).json({ message: "Resident and account created successfully" });
+  } catch (error) {
+    await conn.rollback();
+    console.error("Error creating resident with account:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  } finally {
+    conn.release();
+  }
+};
+
+
 
 // ✅ For resident users
 export const addResident = async (req, res) => {

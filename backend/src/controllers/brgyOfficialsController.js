@@ -40,11 +40,13 @@ export const createBrgyOfficialController = async (req, res) => {
 export const updateBrgyOfficials = async (req, res) => {
   try {
     const result = await updateBrgyOfficial(req.params.id, req.body);
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'Official not found' });
-    res.status(200).json({ message: 'Official updated successfully' });
+    if (result.affectedRows === 0)
+      return res.status(404).json({ message: "Official not found" });
+
+    res.status(200).json({ message: "Official updated successfully" });
   } catch (error) {
-    console.error('Error in updating official:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    console.error("Error in updating official:", error);
+    res.status(500).json({ message: error.message || "Internal Server Error" });
   }
 };
 

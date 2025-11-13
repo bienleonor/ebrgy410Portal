@@ -5,9 +5,12 @@ import ResidentLayout from '../components/layout/ResidentLayout';
 import ResidentDashboard from '../pages/userPages/ResidentDashboard';
 import ResidentProfilePage from '../pages/userPages/ResidentProfilePage';
 import DocumentRequestPage from '../pages/userPages/DocumentRequestPage';
-import ResidentRequestList from '../pages/userPages/ResidentRequestList'
+import ResidentRequestList from '../pages/userPages/ResidentRequestList';
+
 import AdminRequestList from '../pages/adminPage/AdminRequestList';
+import ManageOfficial from '../pages/adminPage/AdminManageOfficial';
 import ResidentListPage from '../pages/adminPage/ResidentListPage';
+import AdminRegisterResident from '../pages/adminPage/AdminRegisterResident';
 
 const privateRoutesConfig = [
   {
@@ -19,6 +22,9 @@ const privateRoutesConfig = [
           { path: '/admin/dashboard', element: <AdminDashboard /> },
           { path: '/admin/requests', element: <AdminRequestList /> },
           { path: '/admin/residents', element: <ResidentListPage /> },
+          { path: '/admin/manage-official', element: <ManageOfficial /> },
+          { path: '/admin/create-account', element: <AdminRegisterResident /> },
+
         ]
       }
     ],

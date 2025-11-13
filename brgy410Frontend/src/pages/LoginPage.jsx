@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/UseAuth";
 import TextInput from "../components/common/TextInput";
 import PrimaryButton from "../components/common/PrimaryButton";
 import AlertBox from "../components/common/AlertBox";
+import { checkResidentProfile } from "../utils/checkResidentProfile";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -13,30 +14,45 @@ export default function LoginPage() {
   const [alert, setAlert] = useState({ message: "", type: "success" });
 
   const roleRedirectMap = {
-    superadmin: '/admin/dashboard',
-    admin: '/admin/dashboard',
-    resident: '/resident/dashboard'
+    superadmin: "/admin/dashboard",
+    admin: "/admin/dashboard",
+    resident: "/resident/dashboard",
   };
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const res = await login(form);
 
-    if (res.success) {
-      const userRole = res.user?.role?.trim().toLowerCase();
-      const redirectPath = roleRedirectMap[userRole];
-
-      if (redirectPath) {
-        setAlert({ message: "Login successful! Redirecting...", type: "success" });
-        setTimeout(() => navigate(redirectPath), 1500);
-      } else {
-        setAlert({ message: `No dashboard mapped for role: ${userRole}`, type: "warning" });
-      }
-    } else {
+    if (!res.success) {
       setAlert({ message: res.message || "Login failed", type: "error" });
+      return;
+    }
+
+    const userRole = res.user?.role?.trim().toLowerCase();
+    let redirectPath = roleRedirectMap[userRole];
+
+    // 🧩 For residents, validate their profile before redirect
+    if (userRole === "resident") {
+      const token = localStorage.getItem("token");
+      const { exists, complete } = await checkResidentProfile(token);
+
+      if (!exists || !complete) {
+        redirectPath = "/resident/profile";
+      }
+    }
+
+    if (redirectPath) {
+      setAlert({ message: "Login successful! Redirecting...", type: "success" });
+      setTimeout(() => navigate(redirectPath), 1500);
+    } else {
+      setAlert({
+        message: `No dashboard mapped for role: ${userRole}`,
+        type: "warning",
+      });
     }
   };
 
@@ -45,13 +61,31 @@ export default function LoginPage() {
       <div className="bg-base-100 text-base-content p-8 rounded-lg shadow-xl shadow-cyan-950 w-96">
         <h2 className="text-2xl font-bold mb-2">Login</h2>
         <AlertBox message={alert.message} type={alert.type} />
+
         <form onSubmit={handleSubmit}>
-          <TextInput name="username" placeholder="Username" value={form.username} onChange={handleChange} className="mt-2"/>
-          <TextInput type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} className="my-3"/>
+          <TextInput
+            name="username"
+            placeholder="Username"
+            value={form.username}
+            onChange={handleChange}
+            className="mt-2"
+          />
+          <TextInput
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            className="my-3"
+          />
           <PrimaryButton text="Login" />
         </form>
+
         <p className="mt-4 text-sm">
-          Don't have an account? <Link to="/Register" className="text-blue-500">Register</Link>
+          Don't have an account?{" "}
+          <Link to="/Register" className="text-blue-500">
+            Register
+          </Link>
         </p>
       </div>
     </div>

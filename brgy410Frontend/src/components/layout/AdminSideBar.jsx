@@ -2,7 +2,7 @@ import React from 'react';
 import barangaylogo from '../../assets/Barangaylogo.svg'
 import { useAuth } from "../../hooks/UseAuth";
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Bell, FileText, Users, UserCheck, UserPlus, LogOut } from 'lucide-react'; // using lucide icons
+import { Home, Bell, FileText, Users, UserCheck, UserPlus, LogOut, UserRoundCog } from 'lucide-react'; // using lucide icons
 
 const AdminSideBar = () => {
   const { logout } = useAuth();
@@ -17,8 +17,8 @@ const AdminSideBar = () => {
     { label: 'Dashboard', icon: <Home size={20} />, path: '/admin/dashboard' },
     { label: 'Notifications', icon: <Bell size={20} />, path: '/admin/notifications' },
     { label: 'View Requests', icon: <FileText size={20} />, path: '/admin/requests' },
+    { label: 'Barangay Officals Term Management', icon: <UserRoundCog size={35} />, path: '/admin/manage-official' },
     { label: 'Residents', icon: <Users size={20} />, path: '/admin/residents' },
-    { label: 'Registered Voters', icon: <UserCheck size={20} />, path: '/admin/voters' },
     { label: 'Create Account', icon: <UserPlus size={20} />, path: '/admin/create-account' },
   ];
 

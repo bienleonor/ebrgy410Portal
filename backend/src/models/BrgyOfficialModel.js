@@ -30,6 +30,7 @@ export const getAllBrgyOfficials = async () => {
     SELECT 
       bo.brgy_official_no,
       bo.resident_id,
+      bo.position_id,
       r.first_name,
       r.middle_name,
       r.last_name,
@@ -38,10 +39,12 @@ export const getAllBrgyOfficials = async () => {
       bo.end_term,
       bo.profile_image,
       bo.stat_id,
+      s.status as status_name,
       bo.remark
     FROM brgy_officials bo
     JOIN residents r ON bo.resident_id = r.resident_id
     JOIN positions p ON bo.position_id = p.position_id
+    LEFT JOIN status s ON bo.stat_id = s.stat_id
   `);
   return rows;
 };
@@ -95,20 +98,38 @@ export const getBrgyOfficialByResidentId = async (residentId) => {
  * Update barangay official record
  */
 export const updateBrgyOfficial = async (id, data) => {
-  const [result] = await pool.execute(
-    `UPDATE brgy_officials 
-     SET position_id = ?, start_term = ?, end_term = ?, profile_image = ?, stat_id = ?, remark = ?
-     WHERE brgy_official_no = ?`,
-    [
-      data.position_id,
-      data.start_term,
-      data.end_term,
-      data.profile_image,
-      data.stat_id,
-      data.remark,
-      id,
-    ]
-  );
+  // Build SET clause dynamically based on provided fields
+  const fields = [];
+  const values = [];
+
+  const allowedFields = [
+    "position_id",
+    "start_term",
+    "end_term",
+    "profile_image",
+    "stat_id",
+    "remark",
+  ];
+
+  for (const field of allowedFields) {
+    if (data[field] !== undefined) {
+      fields.push(`${field} = ?`);
+      values.push(data[field]);
+    }
+  }
+
+  if (fields.length === 0) {
+    throw new Error("No fields to update");
+  }
+
+  const query = `
+    UPDATE brgy_officials
+    SET ${fields.join(", ")}
+    WHERE brgy_official_no = ?
+  `;
+
+  values.push(id);
+  const [result] = await pool.execute(query, values);
   return result;
 };
 

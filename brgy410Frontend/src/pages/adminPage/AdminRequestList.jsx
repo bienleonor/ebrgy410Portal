@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { LogoCardWrapper } from "../../components/common/cards/LogoCardWrapper";
-import AxiosInstance from "../../utils/axiosInstance";
+import AxiosInstance from "../../utils/AxiosInstance";
 import toast from "react-hot-toast";
 
 export default function AdminRequestList() {
@@ -34,10 +34,11 @@ export default function AdminRequestList() {
     try {
       await AxiosInstance.put(`/certificates/${id}/status`, {
         status: "Approved",
-        remarks: "Approved by",
+        remarks: "Approved by Admin",
       });
       toast.success("Request approved successfully!");
       setShowViewModal(false);
+      setSelectedRequest(null);
       fetchRequests();
     } catch (err) {
       console.error(err);
@@ -58,13 +59,17 @@ export default function AdminRequestList() {
     }
 
     try {
-      await AxiosInstance.put(`/certificates/${selectedRequest.cert_req_id}/status`, {
-        status: "Rejected",
-        denied_reason: denyReason,
-      });
+      await AxiosInstance.put(
+        `/certificates/${selectedRequest.cert_req_id}/status`,
+        {
+          status: "Rejected",
+          denied_reason: denyReason,
+        }
+      );
       toast.success("Request denied successfully!");
       setShowDenyModal(false);
       setDenyReason("");
+      setSelectedRequest(null);
       fetchRequests();
     } catch (err) {
       console.error(err);
@@ -72,10 +77,11 @@ export default function AdminRequestList() {
     }
   };
 
-  // 🔹 Download generated PDF
+  // 🔹 Download generated PDF (secured path)
   const handleDownload = async (req) => {
     try {
-      const fileUrl = `http://localhost:5000/${req.generated_file_path}`;
+      const token = localStorage.getItem("token");
+      const fileUrl = `http://localhost:5000/api/certificate-attachments/download/${req.cert_req_id}?token=${token}`;
       window.open(fileUrl, "_blank");
     } catch (err) {
       console.error("Download error:", err);
@@ -83,15 +89,50 @@ export default function AdminRequestList() {
     }
   };
 
+  // 🔹 Print PDF
+  const handlePrint = async (req) => {
+    try {
+      const token = localStorage.getItem("token");
+      const fileUrl = `http://localhost:5000/api/certificate-attachments/download/${req.cert_req_id}?token=${token}`;
+      const printWindow = window.open(fileUrl, "_blank");
+
+      if (!printWindow) {
+        toast.error("Popup blocked — please allow popups for this site.");
+        return;
+      }
+
+      const checkLoaded = setInterval(() => {
+        try {
+          if (printWindow.document.readyState === "complete") {
+            clearInterval(checkLoaded);
+            printWindow.focus();
+            printWindow.print();
+          }
+        } catch {
+          // ignore until ready
+        }
+      }, 500);
+    } catch (err) {
+      console.error("Print error:", err);
+      toast.error("Failed to open document for printing.");
+    }
+  };
+
   return (
     <div className="w-full px-5 pt-3">
       <LogoCardWrapper>
-        <h2 className="text-3xl font-bold mb-6 text-gray-800">All Certificate Requests</h2>
+        <h2 className="text-3xl font-bold mb-6 text-gray-800">
+          All Certificate Requests
+        </h2>
 
         {loading ? (
-          <div className="text-center py-10 text-gray-600">Loading requests...</div>
+          <div className="text-center py-10 text-gray-600">
+            Loading requests...
+          </div>
         ) : requests.length === 0 ? (
-          <div className="text-center py-10 text-gray-600">No certificate requests found.</div>
+          <div className="text-center py-10 text-gray-600">
+            No certificate requests found.
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-t border-black/20">
@@ -107,7 +148,10 @@ export default function AdminRequestList() {
               </thead>
               <tbody>
                 {requests.map((req) => (
-                  <tr key={req.cert_req_id} className="border-b border-black/10 text-gray-900">
+                  <tr
+                    key={req.cert_req_id}
+                    className="border-b border-black/10 text-gray-900"
+                  >
                     <td className="py-3">{req.resident_name}</td>
                     <td className="py-3">{req.certificate_name}</td>
                     <td className="py-3">{req.purpose}</td>
@@ -142,8 +186,7 @@ export default function AdminRequestList() {
                         View
                       </button>
 
-                      {/* ✅ Show download only for Approved requests */}
-                      {req.status === "Approved" && req.generated_file_path && (
+                      {req.status === "Approved" && (
                         <button
                           className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition"
                           onClick={() => handleDownload(req)}
@@ -173,25 +216,51 @@ export default function AdminRequestList() {
               <p><b>Status:</b> {selectedRequest.status}</p>
             </div>
 
-            <div className="flex justify-end gap-2 mt-6">
+            <div className="flex justify-end gap-2 mt-6 flex-wrap">
               <button
                 className="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400"
-                onClick={() => setShowViewModal(false)}
+                onClick={() => {
+                  setShowViewModal(false);
+                  setSelectedRequest(null);
+                }}
               >
                 Close
               </button>
-              <button
-                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
-                onClick={handleDenyClick}
-              >
-                Deny
-              </button>
-              <button
-                className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
-                onClick={() => handleApprove(selectedRequest.cert_req_id)}
-              >
-                Approve
-              </button>
+
+              {selectedRequest.status === "Approved" && (
+                <>
+                  <button
+                    className="px-4 py-2 rounded-lg bg-gray-700 text-white hover:bg-gray-800"
+                    onClick={() => handleDownload(selectedRequest)}
+                  >
+                    Download
+                  </button>
+
+                  <button
+                    className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                    onClick={() => handlePrint(selectedRequest)}
+                  >
+                    Print
+                  </button>
+                </>
+              )}
+
+              {selectedRequest.status === "Pending" && (
+                <>
+                  <button
+                    className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+                    onClick={handleDenyClick}
+                  >
+                    Deny
+                  </button>
+                  <button
+                    className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
+                    onClick={() => handleApprove(selectedRequest.cert_req_id)}
+                  >
+                    Approve
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -210,7 +279,6 @@ export default function AdminRequestList() {
               rows="3"
               placeholder="Enter reason..."
             />
-
             <div className="flex justify-end gap-2 mt-6">
               <button
                 className="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400"

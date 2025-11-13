@@ -3,9 +3,11 @@ import {
   getResidentById,
   listAllResidents,
   deleteResident,
+  createResidentWithAccount,
 } from "../controllers/residentController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import { authorizeAccess } from "../middleware/accessControl.js";
+
 
 const router = Router();
 
@@ -24,8 +26,15 @@ router.use(
   })
 );
 
+//Admin Resident List
 router.get("/residents", listAllResidents);
 router.get("/residents/:id", getResidentById);
 router.delete("/residents/:id", deleteResident);
+
+
+// Admin Create Resident Account... 
+router.post("/register-with-account", createResidentWithAccount);
+router.put("/register-with-account", createResidentWithAccount);
+
 
 export default router;

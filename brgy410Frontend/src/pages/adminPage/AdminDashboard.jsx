@@ -1,6 +1,13 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
+import { useEffect, useState } from "react";
+import axiosInstance from "../../utils/AxiosInstance";
+import toast from "react-hot-toast";
 
 const AdminDashboard = () => {
+
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   // Sample dummy data
   const visitorData = [
     { month: 'Jan', visitors: 100 },
@@ -30,7 +37,33 @@ const AdminDashboard = () => {
 
   const COLORS = ['#4C8BF5', '#E85D8C'];
 
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const res = await axiosInstance.get("/certificates");
+        setRequests(res.data);
+      } catch (error) {
+        console.error("Failed to fetch requests:", error);
+        toast.error("Failed to load your requests.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRequests();
+  }, []);
+
+
+    // Compute counts
+  const counts = {
+    household: requests.length,
+    certificates: requests.length,
+    resident: requests.length,
+    registered_voters: requests.length,
+  };
+  
+
   return (
+    
     <div className="min-h-screen bg-gradient-to-br from-pink-400 to-pink-500 p-6 text-gray-800">
       {/* Header */}
       <div className="mb-6">
