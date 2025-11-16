@@ -1,7 +1,5 @@
-// routes/addressRoutes.js
 import { Router } from "express";
 import * as AddressController from "../controllers/addressController.js";
-// Optionally, add authentication/role middlewares here
 
 const router = Router();
 

@@ -9,6 +9,7 @@ import rateLimiter from './middleware/rateLimiter.js';
 
 // Routes
 import authRoutes from './routes/authRoutes.js';
+
 // import brgyOfficialRoutes from './routes/brgyOfficialRouter.js';
 import residentRoutes from './routes/residentRoutes.js'
 import addressRoutes from "./routes/addressRoutes.js";
@@ -19,7 +20,8 @@ import certificateAttachmentRoutes from "./routes/certificateAttachmentRoutes.js
 import positionRoutes from "./routes/positionRoutes.js";
 import statusRoutes from "./routes/statusRoutes.js";
 import brgyOfficialRoutes from "./routes/brgyOfficialRoutes.js";
-
+import householdRoutes from "./routes/householdRoutes.js";
+import householdMemberRoutes from "./routes/householdMemberRoutes.js";
 
 //Middleware
 import authMiddleware from './middleware/authMiddleware.js';
@@ -56,6 +58,8 @@ app.use("/api/certificates/types", certificateTypeRoutes);
 app.use("/api/certificate-attachments", certificateAttachmentRoutes);
 app.use("/api/positions", positionRoutes);
 app.use("/api/status", statusRoutes);
+app.use("/api/households", householdRoutes);
+app.use("/api/household-members", householdMemberRoutes);
 
 
 // Securely serve files

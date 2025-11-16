@@ -11,6 +11,7 @@ import AdminRequestList from '../pages/adminPage/AdminRequestList';
 import ManageOfficial from '../pages/adminPage/AdminManageOfficial';
 import ResidentListPage from '../pages/adminPage/ResidentListPage';
 import AdminRegisterResident from '../pages/adminPage/AdminRegisterResident';
+import AdminHouseholdManagement from '../pages/adminPage/AdminHouseholdManagement';
 
 const privateRoutesConfig = [
   {
@@ -24,7 +25,7 @@ const privateRoutesConfig = [
           { path: '/admin/residents', element: <ResidentListPage /> },
           { path: '/admin/manage-official', element: <ManageOfficial /> },
           { path: '/admin/create-account', element: <AdminRegisterResident /> },
-
+          { path: '/admin/households', element: <AdminHouseholdManagement /> },
         ]
       }
     ],
