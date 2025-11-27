@@ -1,31 +1,65 @@
-// src/services/certificateService.js
 import { CertificateRequestModel } from "../models/certificateRequestModel.js";
 import { getResidentWithFullAddress } from "../models/residentModel.js";
 import { CertificateTypeModel } from "../models/certificateTypeModel.js";
 import { CertificateAttachmentModel } from "../models/certificateAttachmentModel.js";
-import { generateCertificateFromDocx } from "../utils/generateCertificateFromDocx.js";
 import { CertificateTemplateModel } from "../models/certificateTemplateModel.js";
+import { generateCertificateFromDocx } from "../utils/generateCertificateFromDocx.js";
+import { getBrgyOfficialById, getFullBrgyOfficialById } from "../models/BrgyOfficialModel.js";
+
+
+import pool from "../config/pool.js";
 import path from "path";
 
 export async function handleApprovedCertificate(cert_req_id) {
   try {
-    // 1️⃣ Load the certificate request
+    // 1️⃣ Load certificate request
     const request = await CertificateRequestModel.findById(cert_req_id);
     if (!request) throw new Error(`Request ID ${cert_req_id} not found.`);
 
-    // 2️⃣ Fetch related data (resident, certificate type, and template)
+    // 2️⃣ Load resident, type, template
     const [resident, certType, template] = await Promise.all([
-      getResidentWithFullAddress(request.resident_id), // ✅ fixed
+      getResidentWithFullAddress(request.resident_id),
       CertificateTypeModel.findById(request.certificate_type_id),
       CertificateTemplateModel.findByCertType(request.certificate_type_id),
     ]);
 
-    if (!resident) throw new Error(`Resident not found for request ID ${cert_req_id}`);
-    if (!certType) throw new Error(`Certificate type not found for request ID ${cert_req_id}`);
-    if (!template) throw new Error(`No active template found for certificate type: ${certType.name}`);
+    if (!resident) throw new Error(`Resident not found`);
+    if (!certType) throw new Error(`Certificate type not found`);
+    if (!template) throw new Error(`No template found`);
 
-    // 3️⃣ Prepare placeholder data for DOCX template
-    const issuedDate = new Date(request.issued_date || new Date()).toLocaleDateString("en-US", {
+    // 3️⃣ Fetch Barangay Captain
+    const [captainRows] = await pool.execute(`
+      SELECT 
+        r.first_name, r.middle_name, r.last_name,
+        p.position_name
+      FROM brgy_officials bo
+      JOIN residents r ON r.resident_id = bo.resident_id
+      JOIN positions p ON p.position_id = bo.position_id
+      WHERE bo.position_id = 1
+      ORDER BY bo.start_term DESC
+      LIMIT 1
+    `);
+
+    const captain = captainRows[0] || null;
+    const captainName = captain
+      ? `${captain.first_name} ${captain.middle_name || ""} ${captain.last_name}`
+      : "Barangay Captain";
+
+    // 4️⃣ Fetch approving official using processed_by
+    let signatoryName = "";
+    let signatoryPosition = "";
+
+    if (request.processed_by) {
+      const officiating = await getFullBrgyOfficialById(request.processed_by);
+
+      if (officiating) {
+        signatoryName = `${officiating.first_name} ${officiating.middle_name || ""} ${officiating.last_name}`;
+        signatoryPosition = officiating.position_name;
+      }
+    }
+
+    // 5️⃣ Prepare data for DOCX
+    const issuedDate = new Date().toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "2-digit",
@@ -33,20 +67,25 @@ export async function handleApprovedCertificate(cert_req_id) {
 
     const data = {
       resident_name: `${resident.first_name} ${resident.middle_name || ""} ${resident.last_name}`,
-      address: resident.formatted_address  || "N/A",
+      address: resident.formatted_address || "N/A",
       purpose: request.purpose,
       control_number: request.control_number,
       date_issued: issuedDate,
+
+      // New placeholders:
+      captain_name: captainName,
+      signatory_name: signatoryName,
+      signatory_position: signatoryPosition,
     };
 
-    // 4️⃣ Generate the certificate file (PDF)
+    // 6️⃣ Generate PDF from DOCX
     const pdfPath = await generateCertificateFromDocx({
       templatePath: template.file_path,
       data,
       reference_code: request.control_number,
     });
 
-    // 5️⃣ Save generated certificate file info in database
+    // 7️⃣ Save certificate file
     await CertificateAttachmentModel.create({
       request_id: cert_req_id,
       file_name: path.basename(pdfPath),
@@ -59,6 +98,6 @@ export async function handleApprovedCertificate(cert_req_id) {
 
   } catch (error) {
     console.error("❌ Error in handleApprovedCertificate:", error);
-    throw error; // Let controller handle the HTTP response
+    throw error;
   }
 }

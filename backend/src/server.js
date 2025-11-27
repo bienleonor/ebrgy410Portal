@@ -22,6 +22,7 @@ import statusRoutes from "./routes/statusRoutes.js";
 import brgyOfficialRoutes from "./routes/brgyOfficialRoutes.js";
 import householdRoutes from "./routes/householdRoutes.js";
 import householdMemberRoutes from "./routes/householdMemberRoutes.js";
+import dashboardRoutes from "./routes/adminDashboardRoutes.js";
 
 //Middleware
 import authMiddleware from './middleware/authMiddleware.js';
@@ -60,6 +61,7 @@ app.use("/api/positions", positionRoutes);
 app.use("/api/status", statusRoutes);
 app.use("/api/households", householdRoutes);
 app.use("/api/household-members", householdMemberRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 
 // Securely serve files

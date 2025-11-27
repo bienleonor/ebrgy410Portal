@@ -1,5 +1,6 @@
-import AdminDashboard from '../pages/adminPage/AdminDashboard';
 import ProtectedRoute from '../components/common/ProtectedRoute';
+
+import AdminDashboard from '../pages/adminPage/AdminDashboard';
 import AdminLayout from '../components/layout/AdminLayout';
 import ResidentLayout from '../components/layout/ResidentLayout';
 import ResidentDashboard from '../pages/userPages/ResidentDashboard';

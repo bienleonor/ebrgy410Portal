@@ -4,6 +4,7 @@ import AxiosInstance from "../../utils/AxiosInstance";
 import toast from "react-hot-toast";
 
 export default function AdminRequestList() {
+  const [isGenerating, setIsGenerating] = useState(false);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -32,17 +33,22 @@ export default function AdminRequestList() {
   // 🔹 Approve Request
   const handleApprove = async (id) => {
     try {
+      setIsGenerating(true); // 🔥 Show popup + disable UI
+
       await AxiosInstance.put(`/certificates/${id}/status`, {
         status: "Approved",
         remarks: "Approved by Admin",
       });
-      toast.success("Request approved successfully!");
+
+      toast.success("Document generated successfully!");
       setShowViewModal(false);
       setSelectedRequest(null);
       fetchRequests();
     } catch (err) {
       console.error(err);
       toast.error("Failed to approve request.");
+    } finally {
+      setIsGenerating(false); // 🔥 Hide popup
     }
   };
 
@@ -293,6 +299,15 @@ export default function AdminRequestList() {
                 Confirm Deny
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {isGenerating && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl flex flex-col items-center">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
+            <p className="mt-4 text-lg font-semibold">Generating document…</p>
+            <p className="text-sm text-gray-600">Please wait</p>
           </div>
         </div>
       )}

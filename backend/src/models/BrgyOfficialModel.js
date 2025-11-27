@@ -254,3 +254,25 @@ export const deleteBrgyOfficial = async (id) => {
   );
   return result;
 };
+
+
+export const getFullBrgyOfficialById = async (id) => {
+  const [rows] = await pool.execute(
+    `
+    SELECT 
+      bo.brgy_official_no,
+      bo.resident_id,
+      r.first_name,
+      r.middle_name,
+      r.last_name,
+      p.position_name
+    FROM brgy_officials bo
+    JOIN residents r ON bo.resident_id = r.resident_id
+    JOIN positions p ON bo.position_id = p.position_id
+    WHERE bo.brgy_official_no = ?
+    `,
+    [id]
+  );
+
+  return rows[0] || null;
+};

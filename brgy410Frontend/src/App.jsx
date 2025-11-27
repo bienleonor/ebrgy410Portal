@@ -1,8 +1,5 @@
 import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from './context/AuthContext';
-import { Outlet } from "react-router-dom";
-
-import AxiosInstance from './utils/AxiosInstance';
 
 import publicRoutesConfig from "./routes/PublicRoutesConfig";
 import privateRoutesConfig from "./routes/PrivateRoutesConfig";
