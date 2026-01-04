@@ -19,7 +19,7 @@ const ResidentSidebar = ({ profile }) => {
 
   const handleLogout = () => {
     logout();
-    navigate("/Login");
+    navigate("/login");
   };
 
   return (

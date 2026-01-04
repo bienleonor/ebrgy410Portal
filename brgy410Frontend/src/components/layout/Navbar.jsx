@@ -38,25 +38,25 @@ const Navbar = () => {
           {/* Right Section */}
           <ul className="flex items-center gap-8 text-xl font-bold">
             <li>
-              <Link to="/AboutUs" className="hover:text-blue-600 transition">
+              <Link to="/aboutus" className="hover:text-blue-600 transition">
                 ABOUT US
               </Link>
             </li>
 
             <li>
-              <Link to="/Contacts" className="hover:text-blue-600 transition">
+              <Link to="/contacts" className="hover:text-blue-600 transition">
                 CONTACT US
               </Link>
             </li>
 
             <li>
-              <Link to="/Login" className="hover:text-blue-600 transition">
+              <Link to="/login" className="hover:text-blue-600 transition">
                 LOGIN
               </Link>
             </li>
             
             <li>
-              <Link to="/Register" className="hover:text-blue-600 transition">
+              <Link to="/register" className="hover:text-blue-600 transition">
                 REGISTER
               </Link>
             </li>

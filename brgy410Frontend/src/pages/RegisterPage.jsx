@@ -21,7 +21,7 @@ export default function RegisterPage() {
     const res = await register(form); 
     if (res.success) {
       setAlert({ message: "Registration successful! Redirecting to login...", type: "success" });
-      setTimeout(() => navigate("/Login"), 1500);
+      setTimeout(() => navigate("/login"), 1500);
     } else {
       setAlert({ message: res.message, type: "error" });
     }
