@@ -1,6 +1,6 @@
 import React from 'react';
 import barangaylogo from '../../assets/Barangaylogo.svg'
-import { useAuth } from "../../hooks/UseAuth";
+import { useAuth } from "../../hooks/useAuth";
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Home, Bell, FileText, Users, UserCheck, UserPlus, LogOut, UserRoundCog, House } from 'lucide-react'; // using lucide icons
 
@@ -15,7 +15,7 @@ const AdminSideBar = () => {
 
   const navItems = [
     { label: 'Dashboard', icon: <Home size={20} />, path: '/admin/dashboard' },
-    { label: 'Notifications', icon: <Bell size={20} />, path: '/admin/notifications' },
+    { label: 'Verify Residents', icon: <UserCheck size={20} />, path: '/admin/verify-resident' },
     { label: 'View Requests', icon: <FileText size={20} />, path: '/admin/requests' },
     { label: 'Barangay Officals Term Management', icon: <UserRoundCog size={35} />, path: '/admin/manage-official' },
     { label: 'Residents', icon: <Users size={20} />, path: '/admin/residents' },

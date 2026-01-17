@@ -24,10 +24,10 @@ export const createResident = async (data) => {
   return result;
 };
 
-export const getResidentByUserId = async (userId) => {
+export const getResidentByUserId = async (verified_id) => {
   const [rows] = await pool.execute(
-    `SELECT * FROM residents WHERE user_id = ? LIMIT 1`,
-    [userId]
+    `SELECT * FROM users WHERE verified_id = ? LIMIT 1`,
+    [verified_id]
   );
   return rows[0];
 };
@@ -68,47 +68,48 @@ export const deleteResidentById = async (id) => {
 
 export const getResidentByIdFromDB = async (id) => {
   const [rows] = await pool.execute(
-    `SELECT * FROM residents WHERE resident_id = ? LIMIT 1`,
+    `SELECT * FROM verified_constituent WHERE verified_id = ? LIMIT 1`,
     [id]
   );
   return rows[0];
 };
 
 export const getAllResidents = async () => {
-  const [rows] = await pool.execute(`SELECT * FROM residents`);
+  const [rows] = await pool.execute(`SELECT * FROM verified_constituent`);
   return rows;
 };
 
-export const getResidentWithFullAddress = async (resident_id) => {
+export const getResidentWithFullAddress = async (verified_id) => {
   const query = `
     SELECT 
-      r.*,
+      vc.*,
       a.house_number,
-      a.street,
+      s.street_name,
       b.barangay_name,
       z.zone_number,
       b.district,
       c.name AS city_name
-    FROM residents r
-    LEFT JOIN addresses a ON r.address_id = a.addr_id
+    FROM verified_constituent vc
+    LEFT JOIN addresses a ON vc.addr_id = a.addr_id
+    LEFT JOIN streets s ON a.street_id = s.street_id
     LEFT JOIN barangays b ON a.brgy_id = b.brgy_id
     LEFT JOIN zones z ON b.zone_id = z.zone_id
     LEFT JOIN cities c ON b.city_id = c.city_id
-    WHERE r.resident_id = ?
+    WHERE vc.verified_id = ?
     LIMIT 1
   `;
 
   try {
-    const [rows] = await pool.execute(query, [resident_id]);
+    const [rows] = await pool.execute(query, [verified_id]);
     if (!rows.length) return null;
 
     const r = rows[0];
     // ✅ Auto-format full readable address
     const formatted_address = [
       r.house_number,
-      r.street,
+      r.street_name, "BRGY. " +
       r.barangay_name,
-      r.zone_name,
+      r.zone_number,
       r.district,
       r.city_name,
     ]

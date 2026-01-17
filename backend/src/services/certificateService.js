@@ -18,7 +18,7 @@ export async function handleApprovedCertificate(cert_req_id) {
 
     // 2️⃣ Load resident, type, template
     const [resident, certType, template] = await Promise.all([
-      getResidentWithFullAddress(request.resident_id),
+      getResidentWithFullAddress(request.verified_id),
       CertificateTypeModel.findById(request.certificate_type_id),
       CertificateTemplateModel.findByCertType(request.certificate_type_id),
     ]);
@@ -30,10 +30,10 @@ export async function handleApprovedCertificate(cert_req_id) {
     // 3️⃣ Fetch Barangay Captain
     const [captainRows] = await pool.execute(`
       SELECT 
-        r.first_name, r.middle_name, r.last_name,
+        vc.first_name, vc.middle_name, vc.last_name,
         p.position_name
       FROM brgy_officials bo
-      JOIN residents r ON r.resident_id = bo.resident_id
+      JOIN verified_constituent vc ON vc.verified_id = bo.verified_id
       JOIN positions p ON p.position_id = bo.position_id
       WHERE bo.position_id = 1
       ORDER BY bo.start_term DESC

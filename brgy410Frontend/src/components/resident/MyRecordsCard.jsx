@@ -1,12 +1,12 @@
 import React from "react";
-import { useAuth } from "../../hooks/UseAuth";
+import { useAuth } from "../../hooks/useAuth";
 import { Phone, MapPin } from "lucide-react";
 
 const MyRecordsCard = ({ user = null, address = null }) => {
   const auth = useAuth?.();
   const u = user ?? auth?.user;
   const fullAddress = address
-    ? `${address.house_number} ${address.street}${address.subdivision ? ", " + address.subdivision : ""}, ${address.barangay_name}${address.zone_number ? " " + address.zone_number : ""}, ${address.city_name}, ${address.province_name}`
+    ? `${address.house_number} ${address.street_name}${address.subdivision ? ", " + address.subdivision : ""}, ${address.barangay_name}${address.zone_number ? " " + address.zone_number : ""}, ${address.city_name}, ${address.province_name}`
     : "No address";
 
   function capitalizeWords(str) {

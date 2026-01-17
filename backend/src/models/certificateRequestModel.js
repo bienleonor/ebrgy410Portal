@@ -3,15 +3,15 @@ import pool from "../config/pool.js";
 
 export const CertificateRequestModel = {
   // === CREATE ===
-  async create({ resident_id, certificate_type_id, purpose, quantity, control_number }) {
+  async create({ verified_id, certificate_type_id, purpose, quantity, control_number }) {
     const query = `
       INSERT INTO certificate_requests 
-        (resident_id, certificate_type_id, purpose, quantity, control_number, status, submitted_at) 
+        (verified_id, certificate_type_id, purpose, quantity, control_number, status, submitted_at) 
       VALUES (?, ?, ?, ?, ?, 'Pending', NOW())
     `;
     try {
       const [result] = await pool.execute(query, [
-        resident_id,
+        verified_id,
         certificate_type_id,
         purpose,
         quantity,
@@ -63,11 +63,11 @@ export const CertificateRequestModel = {
       SELECT 
         cr.*,
         ct.name AS certificate_name,
-        CONCAT_WS(' ', r.first_name, r.middle_name, r.last_name) AS resident_name,
+        CONCAT_WS(' ', vc.first_name, vc.middle_name, vc.last_name) AS resident_name,
         p.position_name AS processed_by_position
       FROM certificate_requests cr
       JOIN certificate_types ct ON cr.certificate_type_id = ct.cert_type_id
-      JOIN residents r ON cr.resident_id = r.resident_id
+      JOIN verified_constituent vc ON cr.verified_id = vc.verified_id
       LEFT JOIN brgy_officials bo ON cr.processed_by = bo.brgy_official_no
       LEFT JOIN positions p ON bo.position_id = p.position_id
       ORDER BY cr.submitted_at DESC
@@ -77,17 +77,17 @@ export const CertificateRequestModel = {
   },
 
   // === FETCH BY RESIDENT ===
-  async findByResidentId(resident_id) {
+  async findByResidentId(verified_id) {
     const query = `
       SELECT 
         cr.*, 
         ct.name AS certificate_name
       FROM certificate_requests cr
       JOIN certificate_types ct ON cr.certificate_type_id = ct.cert_type_id
-      WHERE cr.resident_id = ?
+      WHERE cr.verified_id = ?
       ORDER BY cr.submitted_at DESC
     `;
-    const [rows] = await pool.execute(query, [resident_id]);
+    const [rows] = await pool.execute(query, [verified_id]);
     return rows;
   },
 
@@ -97,11 +97,11 @@ export const CertificateRequestModel = {
       SELECT 
         cr.*, 
         ct.name AS certificate_name,
-        CONCAT_WS(' ', r.first_name, r.middle_name, r.last_name) AS resident_name,
+        CONCAT_WS(' ', vc.first_name, vc.middle_name, vc.last_name) AS resident_name,
         p.position_name AS processed_by_position
       FROM certificate_requests cr
       JOIN certificate_types ct ON cr.certificate_type_id = ct.cert_type_id
-      JOIN residents r ON cr.resident_id = r.resident_id
+      JOIN verified_constituent vc ON cr.verified_id = vc.verified_id
       LEFT JOIN brgy_officials bo ON cr.processed_by = bo.brgy_official_no
       LEFT JOIN positions p ON bo.position_id = p.position_id
       WHERE cr.cert_req_id = ?
@@ -116,10 +116,10 @@ export const CertificateRequestModel = {
     const query = `
       SELECT 
         cr.*, ct.name AS certificate_name,
-        CONCAT_WS(' ', r.first_name, r.middle_name, r.last_name) AS resident_name
+        CONCAT_WS(' ', vc.first_name, vc.middle_name, vc.last_name) AS resident_name
       FROM certificate_requests cr
       JOIN certificate_types ct ON cr.certificate_type_id = ct.cert_type_id
-      JOIN residents r ON cr.resident_id = r.resident_id
+      JOIN verified_constituent vc ON cr.verified_id = vc.verified_id
       WHERE cr.status = ?
       ORDER BY cr.submitted_at DESC
     `;

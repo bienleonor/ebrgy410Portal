@@ -1,4 +1,5 @@
 import pool from "../config/pool.js";
+import allStatus from "./statusModel.js";
 
 /**
  * Create a new Barangay Official record.
@@ -11,8 +12,16 @@ export const createBrgyOfficial = async (data) => {
     console.log('Creating Brgy Official with data:', data);
 
     // Check if any critical field is missing or undefined
-    if (!data.resident_id || !data.position_id || !data.start_term || !data.end_term) {
-      throw new Error('Missing required fields: resident_id, position_id, start_term, or end_term');
+    if (!data.verified_id || !data.position_id || !data.start_term || !data.end_term) {
+      throw new Error('Missing required fields: verified_id, position_id, start_term, or end_term');
+    }
+
+    // Validate stat_id if provided - must be OFFICIAL type
+    if (data.stat_id) {
+      const validStatus = await allStatus.getStatusById(data.stat_id);
+      if (!validStatus || validStatus.status_type !== 'OFFICIAL') {
+        throw new Error('Invalid status. Only OFFICIAL status types are allowed.');
+      }
     }
 
     // Update the role in the users table
@@ -22,17 +31,17 @@ export const createBrgyOfficial = async (data) => {
        WHERE user_id = (
          SELECT user_id 
          FROM residents 
-         WHERE resident_id = ?
+         WHERE verified_id = ?
        )`,
-      [data.resident_id]  // Use the resident_id from the request body
+      [data.verified_id]  // Use the verified_id from the request body
     );
 
     // Insert into brgy_officials table with checks for undefined
     await conn.execute(
-      `INSERT INTO brgy_officials (resident_id, position_id, start_term, end_term, profile_image, stat_id, remark)
+      `INSERT INTO brgy_officials (verified_id, position_id, start_term, end_term, profile_image, stat_id, remark)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
-        data.resident_id,
+        data.verified_id,
         data.position_id,
         data.start_term,
         data.end_term,
@@ -56,22 +65,22 @@ export const getAllBrgyOfficials = async () => {
   const [rows] = await pool.execute(`
     SELECT 
       bo.brgy_official_no,
-      bo.resident_id,
+      bo.verified_id,
       bo.position_id,
-      r.first_name,
-      r.middle_name,
-      r.last_name,
+      vc.first_name,
+      vc.middle_name,
+      vc.last_name,
       p.position_name,
       bo.start_term,
       bo.end_term,
       bo.profile_image,
       bo.stat_id,
-      s.status as status_name,
+      s.status_name,
       bo.remark
     FROM brgy_officials bo
-    JOIN residents r ON bo.resident_id = r.resident_id
+    JOIN verified_constituent vc ON bo.verified_id = vc.verified_id
     JOIN positions p ON bo.position_id = p.position_id
-    LEFT JOIN status s ON bo.stat_id = s.stat_id
+    LEFT JOIN status s ON bo.stat_id = s.stat_id AND s.status_type = 'OFFICIAL'
   `);
   return rows;
 };
@@ -84,7 +93,7 @@ export const getBrgyOfficialById = async (id) => {
     `
     SELECT 
       bo.brgy_official_no,
-      bo.resident_id,
+      bo.verified_id,
       p.position_name,
       bo.start_term,
       bo.end_term,
@@ -103,20 +112,20 @@ export const getBrgyOfficialById = async (id) => {
 /**
  * Get barangay official by resident ID (used for document approval)
  */
-export const getBrgyOfficialByResidentId = async (residentId) => {
+export const getBrgyOfficialByResidentId = async (verified_id) => {
   const [rows] = await pool.execute(
     `
     SELECT 
       bo.brgy_official_no,
-      bo.resident_id,
+      bo.verified_id,
       bo.position_id,
       p.position_name
     FROM brgy_officials bo
     JOIN positions p ON bo.position_id = p.position_id
-    WHERE bo.resident_id = ?
+    WHERE bo.verified_id = ?
     LIMIT 1
     `,
-    [residentId]
+    [verified_id]
   );
   return rows[0] || null;
 };
@@ -129,6 +138,14 @@ export const updateBrgyOfficial = async (id, data) => {
 
   try {
     await conn.beginTransaction();
+
+    // Validate stat_id if provided - must be OFFICIAL type
+    if (data.stat_id !== undefined) {
+      const validStatus = await allStatus.getStatusById(data.stat_id);
+      if (!validStatus || validStatus.status_type !== 'OFFICIAL') {
+        throw new Error("Invalid status. Only OFFICIAL status types are allowed.");
+      }
+    }
 
     // Build dynamic update for the brgy_officials table
     const fields = [];
@@ -174,18 +191,22 @@ export const updateBrgyOfficial = async (id, data) => {
 
     // Fetch updated row to get the user_id for role modification
     const [[official]] = await conn.execute(
-      `SELECT resident_id, stat_id, end_term 
+      `SELECT verified_id, stat_id, end_term
        FROM brgy_officials 
        WHERE brgy_official_no = ?`,
       [id]
     );
 
-    const { resident_id, stat_id, end_term } = official;
+    const { verified_id, stat_id, end_term } = official;
 
-    // Fetch user_id based on resident_id
+    // Get status details from statusModel
+    const statusDetails = await allStatus.getStatusById(stat_id);
+    const status_name = statusDetails?.status || null;
+
+    // Fetch user_id based on verified_id
     const [[user]] = await conn.execute(
-      `SELECT user_id FROM residents WHERE resident_id = ?`,
-      [resident_id]  // Fetch the user_id using resident_id from the residents table
+      `SELECT user_id FROM residents WHERE verified_id = ?`,
+      [verified_id]  // Fetch the user_id using verified_id from the residents table
     );
 
     if (!user) throw new Error("User not found");
@@ -206,19 +227,28 @@ export const updateBrgyOfficial = async (id, data) => {
       return { message: "Superadmin role protected. Official updated." };
     }
 
-    // Check the term and status
+    // Check the term and status (using status_name from statusModel)
     const today = new Date();
     const end = new Date(end_term);
     const termEnded = end < today;
 
     let newRole = null;
 
-    // If active and term is not ended
-    if (stat_id == 1 && !termEnded) {
+    // Get all OFFICIAL statuses to determine active/inactive
+    const officialStatuses = await allStatus.getStatusByType('OFFICIAL');
+    const activeStatuses = officialStatuses
+      .filter(s => ['Active', 'Serving'].includes(s.status))
+      .map(s => s.status);
+    const inactiveStatuses = officialStatuses
+      .filter(s => ['Term Ended', 'Suspended', 'Resigned'].includes(s.status))
+      .map(s => s.status);
+
+    // If active status and term is not ended
+    if (activeStatuses.includes(status_name) && !termEnded) {
       newRole = 2; // admin
     }
-    // If term ended or other conditions (suspended/expired)
-    if (stat_id == 2 || stat_id == 3 || termEnded) {
+    // If term ended or inactive status
+    else if (inactiveStatuses.includes(status_name) || termEnded) {
       newRole = 3; // resident
     }
 
@@ -261,13 +291,13 @@ export const getFullBrgyOfficialById = async (id) => {
     `
     SELECT 
       bo.brgy_official_no,
-      bo.resident_id,
-      r.first_name,
-      r.middle_name,
-      r.last_name,
+      bo.verified_id,
+      vc.first_name,
+      vc.middle_name,
+      vc.last_name,
       p.position_name
     FROM brgy_officials bo
-    JOIN residents r ON bo.resident_id = r.resident_id
+    JOIN verified_constituent vc ON bo.verified_id = vc.verified_id
     JOIN positions p ON bo.position_id = p.position_id
     WHERE bo.brgy_official_no = ?
     `,

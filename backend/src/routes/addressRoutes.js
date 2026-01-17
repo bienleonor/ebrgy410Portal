@@ -41,6 +41,13 @@ router.post("/purok", AddressController.createPurok);
 router.put("/purok/:id", AddressController.updatePurok);
 router.delete("/purok/:id", AddressController.deletePurok);
 
+//STREETS
+router.get("/streets", AddressController.listStreets);
+router.get("/streets/:id", AddressController.getStreet);
+router.post("/streets", AddressController.createStreet);
+router.put("/streets/:id", AddressController.updateStreet);
+router.delete("/streets/:id", AddressController.deleteStreet);
+
 //ADDRESSES
 router.get("/addresses", AddressController.listAddresses);
 router.get("/addresses/:id", AddressController.getSingleAddress);

@@ -23,7 +23,7 @@ export default function BrgyOfficialsManagement() {
 
   // Form state for adding new official
   const [form, setForm] = useState({
-    resident_id: "",
+    verified_id: "",
     position_id: "",
     start_term: "",
     remark: ""
@@ -117,7 +117,7 @@ export default function BrgyOfficialsManagement() {
   const handleAddOfficial = async (e) => {
     e.preventDefault();[]
     
-    if (!form.resident_id || !form.position_id || !form.start_term) {
+    if (!form.verified_id || !form.position_id || !form.start_term) {
       toast.error("Please fill in all required fields.");
       return;
     }
@@ -133,7 +133,7 @@ export default function BrgyOfficialsManagement() {
 
       toast.success("Official added successfully!");
       setShowAddModal(false);
-      setForm({ resident_id: "", position_id: "", start_term: "", remark: "" });
+      setForm({ verified_id: "", position_id: "", start_term: "", remark: "" });
       fetchOfficials();
     } catch (err) {
       console.error(err);
@@ -403,14 +403,14 @@ export default function BrgyOfficialsManagement() {
               <div>
                 <label className="block mb-1 font-medium">Select Resident *</label>
                 <select
-                  value={form.resident_id}
-                  onChange={(e) => setForm({ ...form, resident_id: e.target.value })}
+                  value={form.verified_id}
+                  onChange={(e) => setForm({ ...form, verified_id: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg p-2"
                   required
                 >
                   <option value="">-- Select Resident --</option>
                   {residents.map((res) => (
-                    <option key={res.resident_id} value={res.resident_id}>
+                    <option key={res.verified_id} value={res.verified_id}>
                       {res.first_name} {res.middle_name} {res.last_name}
                     </option>
                   ))}
@@ -469,7 +469,7 @@ export default function BrgyOfficialsManagement() {
                   className="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400"
                   onClick={() => {
                     setShowAddModal(false);
-                    setForm({ resident_id: "", position_id: "", start_term: "", remark: "" });
+                    setForm({ verified_id: "", position_id: "", start_term: "", remark: "" });
                   }}
                 >
                   Cancel

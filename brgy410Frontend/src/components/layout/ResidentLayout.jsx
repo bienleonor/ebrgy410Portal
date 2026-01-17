@@ -31,9 +31,9 @@ const ResidentLayout = () => {
         setProfile(profileData);
 
         // ✅ Fetch address (if exists)
-        if (profileData?.address_id) {
+        if (profileData?.addr_id) {
           const { data: addressData } = await AxiosInstance.get(
-            `/address/addresses/${profileData.address_id}`,
+            `/address/addresses/${profileData.addr_id}`,
             { signal: controller.signal }
           );
           setAddress(addressData);
@@ -59,7 +59,7 @@ const ResidentLayout = () => {
     return () => controller.abort();
   }, []);
 
-  // 🚦 Validate profile *after* loading is complete
+  // Validate profile after loading is complete
   useEffect(() => {
     if (loading) return; // ⛔ Wait for loading to finish
     if (!profile) return; // ⛔ Wait for profile to be fetched
@@ -81,10 +81,9 @@ const ResidentLayout = () => {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* 🧭 Header */}
       <ResidentHeader user={profile} />
-
+      {/* 🧩 Sidebar */}
+      <ResidentSidebar profile={profile} /> {/* ✅ pass profile down */}
       <div className="flex flex-1">
-        {/* 🧩 Sidebar */}
-        <ResidentSidebar profile={profile} /> {/* ✅ pass profile down */}
 
         {/* 🧱 Main Content */}
         <main className="flex-1 ml-64 w-full bg-gradient-to-b from-pink-500 to-pink-100">

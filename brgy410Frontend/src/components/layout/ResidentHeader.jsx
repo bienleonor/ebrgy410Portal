@@ -1,7 +1,7 @@
 import React from "react";
 import { Bell, User } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../hooks/UseAuth";
+import { useAuth } from "../../hooks/useAuth";
 
 const ResidentHeader = ({ user = null }) => {
   const auth = useAuth?.();

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/UseAuth";
+import { useAuth } from "../../hooks/useAuth";
 import barangaylogo from "../../assets/brgy410.png";
 import { Home, FileText, LogOut } from "lucide-react";
 import { useProfileValidation } from "../../hooks/useProfileValidation";

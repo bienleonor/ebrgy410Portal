@@ -13,3 +13,10 @@ export const findRoleNameById = async (roleId) => {
   );
   return rows[0]?.role_name || null;
 };
+
+export const getAllRoles = async () => {
+  const [rows] = await pool.execute(
+    `SELECT * FROM role ORDER BY role_name ASC`
+  );
+  return rows
+}

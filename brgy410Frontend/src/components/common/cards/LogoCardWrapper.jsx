@@ -38,3 +38,5 @@ export const LogoCardWrapper = ({ children, className = "" }) => {
     </Card>
   );
 };
+
+export default LogoCardWrapper;

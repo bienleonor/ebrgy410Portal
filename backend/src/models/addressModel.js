@@ -180,12 +180,43 @@ export const deletePurok = async (id) => {
   await pool.execute(`DELETE FROM purok_sitio WHERE purok_id = ?`, [id]);
 };
 
+//STREETS
+export const getStreets = async () => {
+  const [rows] = await pool.execute(`SELECT * FROM streets ORDER BY street_name ASC`);
+  return rows;
+};
+
+export const getStreetById = async (id) => {
+  const [rows] = await pool.execute(`SELECT * FROM streets WHERE street_id = ?`, [id]);
+  return rows[0];
+};
+
+export const createStreet = async (data) => {
+  const [result] = await pool.execute(
+    `INSERT INTO streets (street_name) VALUES (?)`,
+    [data.street_name]
+  );
+  return result.insertId;
+};
+
+export const updateStreet = async (id, data) => {
+  await pool.execute(
+    `UPDATE streets SET street_name = ? WHERE street_id = ?`,
+    [data.street_name, id]
+  );
+};
+
+export const deleteStreet = async (id) => {
+  await pool.execute(`DELETE FROM streets WHERE street_id = ?`, [id]);
+};
 
 //ADDRESSES
 export const getAddresses = async () => {
   const [rows] = await pool.execute(`
-    SELECT a.*, b.barangay_name, z.zone_number, c.name AS city_name, p.name AS province_name, r.name AS region_name
+    SELECT a.addr_id, a.house_number, a.street_id, s.street_name, a.subdivision, a.brgy_id, a.purok_id,
+           b.barangay_name, z.zone_number, c.name AS city_name, p.name AS province_name, r.name AS region_name
     FROM addresses a
+    LEFT JOIN streets s ON a.street_id = s.street_id
     JOIN barangays b ON a.brgy_id = b.brgy_id
     JOIN cities c ON b.city_id = c.city_id
     JOIN provinces p ON c.province_id = p.prov_id
@@ -199,8 +230,10 @@ export const getAddresses = async () => {
 export const getAddressById = async (id) => {
   const [rows] = await pool.execute(
     `
-    SELECT a.*, b.barangay_name, z.zone_number, c.name AS city_name, p.name AS province_name, r.name AS region_name
+    SELECT a.addr_id, a.house_number, a.street_id, s.street_name, a.subdivision, a.brgy_id, a.purok_id,
+           b.barangay_name, z.zone_number, c.name AS city_name, p.name AS province_name, r.name AS region_name
     FROM addresses a
+    LEFT JOIN streets s ON a.street_id = s.street_id
     JOIN barangays b ON a.brgy_id = b.brgy_id
     JOIN cities c ON b.city_id = c.city_id
     JOIN provinces p ON c.province_id = p.prov_id
@@ -215,9 +248,9 @@ export const getAddressById = async (id) => {
 
 export const createAddress = async (data) => {
   const [result] = await pool.execute(
-    `INSERT INTO addresses (house_number, street, subdivision, brgy_id, purok_id)
+    `INSERT INTO addresses (house_number, street_id, subdivision, brgy_id, purok_id)
      VALUES (?, ?, ?, ?, ?)`,
-    [data.house_number, data.street, data.subdivision || null, data.brgy_id, data.purok_id || null]
+    [data.house_number, data.street_id, data.subdivision || null, data.brgy_id, data.purok_id || null]
   );
   return result.insertId;
 };
@@ -225,9 +258,9 @@ export const createAddress = async (data) => {
 export const updateAddress = async (id, data) => {
   await pool.execute(
     `UPDATE addresses
-     SET house_number = ?, street = ?, subdivision = ?, brgy_id = ?, purok_id = ?
+     SET house_number = ?, street_id = ?, subdivision = ?, brgy_id = ?, purok_id = ?
      WHERE addr_id = ?`,
-    [data.house_number, data.street, data.subdivision || null, data.brgy_id, data.purok_id || null, id]
+    [data.house_number, data.street_id, data.subdivision || null, data.brgy_id, data.purok_id || null, id]
   );
 };
 
@@ -239,10 +272,10 @@ export const findOrCreateAddress = async (data) => {
   // Check if address exists
   const [rows] = await pool.execute(
     `SELECT addr_id FROM addresses 
-     WHERE house_number = ? AND street = ? AND subdivision <=> ? 
+     WHERE house_number = ? AND street_id = ? AND subdivision <=> ? 
        AND brgy_id = ? AND purok_id <=> ? 
      LIMIT 1`,
-    [data.house_number, data.street, data.subdivision || null, data.brgy_id, data.purok_id || null]
+    [data.house_number, data.street_id, data.subdivision || null, data.brgy_id, data.purok_id || null]
   );
 
   if (rows.length > 0) {
@@ -252,9 +285,9 @@ export const findOrCreateAddress = async (data) => {
 
   // Otherwise, insert new address
   const [result] = await pool.execute(
-    `INSERT INTO addresses (house_number, street, subdivision, brgy_id, purok_id)
+    `INSERT INTO addresses (house_number, street_id, subdivision, brgy_id, purok_id)
      VALUES (?, ?, ?, ?, ?)`,
-    [data.house_number, data.street, data.subdivision ?? null, data.brgy_id, data.purok_id ?? null]
+    [data.house_number, data.street_id, data.subdivision ?? null, data.brgy_id, data.purok_id ?? null]
   );
 
   return result.insertId;

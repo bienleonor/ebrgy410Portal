@@ -1,4 +1,4 @@
-import AxiosInstance from '../utils/AxiosInstance';
+import axiosInstance from '../utils/AxiosInstance';
 
 // 🔹 Save data in localStorage
 export const saveAuthData = (token, user) => {
@@ -14,7 +14,7 @@ export const clearAuthData = () => {
 
 // 🔹 Login API call
 export const loginService = async (credentials) => {
-  const { data } = await AxiosInstance.post("/auth/login", credentials);
+  const { data } = await axiosInstance.post("/auth/login", credentials);
   if (!data.token || !data.user) {
     console.error("🚨 Missing token or user in response:", data);
     throw new Error("Invalid login response");
@@ -28,6 +28,6 @@ export const loginService = async (credentials) => {
 
 // 🔹 Registration
 export const registerService = async (data) => {
-  const response = await AxiosInstance.post("/auth/signup", data);
+  const response = await axiosInstance.post("/auth/signup", data);
   return response.data;
 };

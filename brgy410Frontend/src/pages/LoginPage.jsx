@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../hooks/UseAuth";
+import { useAuth } from "../hooks/useAuth";
 import TextInput from "../components/common/TextInput";
 import PrimaryButton from "../components/common/PrimaryButton";
 import AlertBox from "../components/common/AlertBox";

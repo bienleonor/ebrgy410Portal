@@ -26,9 +26,9 @@ export const findUserById = async (id) => {
 export const updateUser = async (id, data) => {
   const [result] = await pool.execute(
     `UPDATE users 
-     SET username = ?, email = ?, password = ?, role_id = ?, active_stat = ?, updated_at = NOW()
+     SET username = ?, password = ?, role_id = ?, active_stat = ?, updated_at = NOW()
      WHERE user_id = ?`,
-    [data.username, data.email, data.password, data.role_id, data.active_stat, id]
+    [data.username, data.password, data.role_id, data.active_stat, id]
   );
   return result;
 };
@@ -40,4 +40,30 @@ export const deactivateUser = async (id) => {
      WHERE user_id = ?`, [id]
   );
   return result;
+};
+
+export const createUserFromVerifiedConstituent = async (verified_id, username, hashedPassword) => {
+  // Role 3 = Resident, active_stat = 1 (active)
+  const [result] = await pool.execute(
+    `INSERT INTO users (username, password, role_id, active_stat, verified_id, created_at, updated_at)
+     VALUES (?, ?, 3, 1, ?, NOW(), NOW())`,
+    [username, hashedPassword, verified_id]
+  );
+  return result.insertId;
+};
+
+export const checkUsernameExists = async (username) => {
+  const [rows] = await pool.execute(
+    `SELECT user_id FROM users WHERE username = ? LIMIT 1`,
+    [username]
+  );
+  return rows.length > 0;
+};
+
+export const getVerifiedConstituentIdByUserId = async (userId) => {
+  const [rows] = await pool.execute(
+    `SELECT verified_id FROM users WHERE user_id = ? LIMIT 1`,
+    [userId]
+  );
+  return rows[0]?.verified_id || null;
 };

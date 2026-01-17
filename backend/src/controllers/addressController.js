@@ -1,5 +1,52 @@
 import * as Address from "../models/addressModel.js";
 
+//STREETS TABLE
+export const listStreets = async (req, res) => {
+  try {
+    const data = await Address.getStreets();
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
+export const getStreet = async (req, res) => {
+  try {
+    const data = await Address.getStreetById(req.params.id);
+    if (!data) return res.status(404).json({ error: "Street not found" });
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
+export const createStreet = async (req, res) => {
+  try {
+    const id = await Address.createStreet(req.body);
+    res.status(201).json({ street_id: id });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
+export const updateStreet = async (req, res) => {
+  try {
+    await Address.updateStreet(req.params.id, req.body);
+    res.json({ message: "Street updated" });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
+export const deleteStreet = async (req, res) => {
+  try {
+    await Address.deleteStreet(req.params.id);
+    res.json({ message: "Street deleted" });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+};
+
 //REGION TABLE
 export const listRegions = async (req, res) => {
   try {

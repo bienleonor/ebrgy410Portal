@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { LogoCardWrapper } from "../../components/common/cards/LogoCardWrapper";
-import AxiosInstance from "../../utils/AxiosInstance";
+import axiosInstance from "../../utils/AxiosInstance";
 import toast from "react-hot-toast";
 
 export default function AdminRequestList() {
@@ -16,7 +16,7 @@ export default function AdminRequestList() {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const { data } = await AxiosInstance.get("/certificates/requests");
+      const { data } = await axiosInstance.get("/certificates/requests");
       setRequests(data);
     } catch (err) {
       console.error("Error fetching requests:", err);
@@ -35,7 +35,7 @@ export default function AdminRequestList() {
     try {
       setIsGenerating(true); // 🔥 Show popup + disable UI
 
-      await AxiosInstance.put(`/certificates/${id}/status`, {
+      await axiosInstance.put(`/certificates/${id}/status`, {
         status: "Approved",
         remarks: "Approved by Admin",
       });
@@ -65,7 +65,7 @@ export default function AdminRequestList() {
     }
 
     try {
-      await AxiosInstance.put(
+      await axiosInstance.put(
         `/certificates/${selectedRequest.cert_req_id}/status`,
         {
           status: "Rejected",

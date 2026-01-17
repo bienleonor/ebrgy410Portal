@@ -6,6 +6,7 @@ import { EventEmitter } from 'events';
 import path from "path";
 import pool from './config/pool.js';
 import rateLimiter from './middleware/rateLimiter.js';
+import { startLibreOfficeDaemon, stopLibreOfficeDaemon } from './utils/generateCertificateFromDocx.js';
 
 // Routes
 import authRoutes from './routes/authRoutes.js';
@@ -23,6 +24,10 @@ import brgyOfficialRoutes from "./routes/brgyOfficialRoutes.js";
 import householdRoutes from "./routes/householdRoutes.js";
 import householdMemberRoutes from "./routes/householdMemberRoutes.js";
 import dashboardRoutes from "./routes/adminDashboardRoutes.js";
+import verifiedConstituentRoutes from "./routes/verifiedConstituentRoutes.js";
+import lookupRoutes from "./routes/lookupRoutes.js";
+import censusRoutes from "./routes/censusRoutes.js";
+import otpRoutes from "./routes/otpRoutes.js";
 
 //Middleware
 import authMiddleware from './middleware/authMiddleware.js';
@@ -62,7 +67,10 @@ app.use("/api/status", statusRoutes);
 app.use("/api/households", householdRoutes);
 app.use("/api/household-members", householdMemberRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-
+app.use("/api/verified-resident", verifiedConstituentRoutes);
+app.use("/api/lookup", lookupRoutes);
+app.use("/api/census", censusRoutes);
+app.use("/api/otp", otpRoutes);
 
 // Securely serve files
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads"))); // ✅ works now
@@ -75,9 +83,26 @@ app.listen(PORT, async () => {
   try {
     await pool.getConnection(); // Check DB connection
     console.log('✅ Connected to MySQL DB');
+    
+    // Start LibreOffice daemon for PDF conversions
+    await startLibreOfficeDaemon();
+    
     console.log(`🚀 API Server running on http://localhost:${PORT}`);
   } catch (err) {
-    console.error('❌ DB Connection failed:', err);
+    console.error('❌ Server startup failed:', err);
     process.exit(1);
   }
+});
+
+// --- Graceful Shutdown ---
+process.on('SIGINT', () => {
+  console.log('\n🛑 Shutting down server...');
+  stopLibreOfficeDaemon();
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('\n🛑 Shutting down server...');
+  stopLibreOfficeDaemon();
+  process.exit(0);
 });

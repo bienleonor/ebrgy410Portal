@@ -69,7 +69,7 @@ export default function HouseholdManagement() {
 
   const fetchResidents = async () => {
     try {
-      const { data } = await AxiosInstance.get("/admin/residents");
+      const { data } = await axiosInstance.get("/admin/residents");
       setResidents(data);
     } catch (err) {
       console.error("Error fetching residents:", err);
@@ -78,7 +78,7 @@ export default function HouseholdManagement() {
 
   const fetchAddresses = async () => {
     try {
-      const { data } = await AxiosInstance.get("/address/addresses");
+      const { data } = await axiosInstance.get("/address/addresses");
       setAddresses(data);
     } catch (err) {
       console.error("Error fetching addresses:", err);
@@ -94,7 +94,7 @@ export default function HouseholdManagement() {
   const handleAddHousehold = async (e) => {
     e.preventDefault();
     try {
-      await AxiosInstance.post("/households", householdForm);
+      await axiosInstance.post("/households", householdForm);
       toast.success("Household created successfully!");
       setShowAddHouseholdModal(false);
       setHouseholdForm({ address_id: "" });
@@ -109,7 +109,7 @@ export default function HouseholdManagement() {
   const handleAddMember = async (e) => {
     e.preventDefault();
     try {
-      await AxiosInstance.post("/household-members", memberForm);
+      await axiosInstance.post("/household-members", memberForm);
       toast.success("Member added to household!");
       setShowAddMemberModal(false);
       setMemberForm({ household_id: "", resident_id: "", role_in_household: "Other" });
@@ -125,7 +125,7 @@ export default function HouseholdManagement() {
     if (!window.confirm("Remove this member from household?")) return;
 
     try {
-      await AxiosInstance.delete(`/household-members/${memberId}`);
+      await axiosInstance.delete(`/household-members/${memberId}`);
       toast.success("Member removed from household");
       fetchHouseholds();
     } catch (err) {

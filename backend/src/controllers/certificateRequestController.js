@@ -1,9 +1,7 @@
 // src/controllers/certificateRequestController.js
 import { CertificateRequestModel } from "../models/certificateRequestModel.js";
 import { CertificateTypeModel } from "../models/certificateTypeModel.js";
-import {
-  getResidentByUserId,
-} from "../models/residentModel.js";
+import { getVerifiedConstituentIdByUserId } from "../models/User.js";
 import { getBrgyOfficialByResidentId } from "../models/BrgyOfficialModel.js";
 import { handleApprovedCertificate } from "../services/certificateService.js";
 import { generateControlNumber } from "../utils/generateControlNumber.js";
@@ -13,8 +11,8 @@ export const createCertificateRequest = async (req, res) => {
     const userId = req.user.id;
     const { certificate_type_id, purpose, quantity } = req.body;
 
-    const resident = await getResidentByUserId(userId);
-    if (!resident) return res.status(404).json({ message: "Resident not found." });
+    const verified_id = await getVerifiedConstituentIdByUserId(userId);
+    if (!verified_id) return res.status(404).json({ message: "Verified constituent not found." });
 
     // Generate unique control number
     const controlNumber = await generateControlNumber(certificate_type_id);
@@ -24,7 +22,7 @@ export const createCertificateRequest = async (req, res) => {
     if (!certType) return res.status(400).json({ message: "Invalid certificate type." });
 
     const newRequestId = await CertificateRequestModel.create({
-      resident_id: resident.resident_id,
+      verified_id,
       certificate_type_id,
       purpose,
       quantity,
@@ -58,16 +56,16 @@ export const updateCertificateStatus = async (req, res) => {
       return res.status(400).json({ message: `Invalid status: ${status}` });
     }
 
-    // Get resident info of the logged-in user
-    const officialResident = await getResidentByUserId(officialUserId);
-    if (!officialResident && req.user.role !== "SuperAdmin") {
+    // Get verified_id of the logged-in user
+    const verified_id = await getVerifiedConstituentIdByUserId(officialUserId);
+    if (!verified_id && req.user.role !== "SuperAdmin") {
       return res.status(403).json({ message: "You are not authorized to perform this action." });
     }
 
     // Get brgy official number (if exists)
     let processedBy = null;
     if (req.user.role !== "SuperAdmin") {
-      const official = await getBrgyOfficialByResidentId(officialResident.resident_id);
+      const official = await getBrgyOfficialByResidentId(verified_id);
       if (!official) {
         return res.status(404).json({ message: "Barangay official record not found." });
       }
@@ -82,14 +80,22 @@ export const updateCertificateStatus = async (req, res) => {
       processed_by: processedBy,
     });
 
+    // Generate certificate asynchronously (don't wait for completion)
     if (status === "Approved") {
-      await handleApprovedCertificate(cert_req_id);
+      handleApprovedCertificate(cert_req_id).catch(err => {
+        console.error("❌ Background certificate generation failed:", err);
+      });
     }
 
     res.status(200).json({ message: `Request ${status} successfully.` });
   } catch (error) {
     console.error("Error updating certificate status:", error);
-    res.status(500).json({ message: "Internal server error." });
+    console.error("Error details:", error.message);
+    console.error("Error stack:", error.stack);
+    res.status(500).json({ 
+      message: "Internal server error.",
+      error: error.message 
+    });
   }
 };
 
@@ -108,11 +114,11 @@ export const getAllCertificateRequests = async (req, res) => {
 export const getMyCertificateRequests = async (req, res) => {
   try {
     const userId = req.user.id;
-    const resident = await getResidentByUserId(userId);
-    if (!resident)
-      return res.status(404).json({ message: "Resident record missing." });
+    const verified_id = await getVerifiedConstituentIdByUserId(userId);
+    if (!verified_id)
+      return res.status(404).json({ message: "Verified constituent not found." });
 
-    const requests = await CertificateRequestModel.findByResidentId(resident.resident_id);
+    const requests = await CertificateRequestModel.findByResidentId(verified_id);
     res.status(200).json(requests);
   } catch (error) {
     console.error("Error fetching requests:", error);

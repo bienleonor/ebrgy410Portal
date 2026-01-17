@@ -1,157 +1,112 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axiosInstance from "../utils/AxiosInstance";
 import TextInput from "../components/common/TextInput";
 import PrimaryButton from "../components/common/PrimaryButton";
 import toast from "react-hot-toast";
-import { LogoCardWrapper } from "../components/common/cards/LogoCardWrapper";
+import LogoCardWrapper from "../components/common/cards/LogoCardWrapper";
 
 const PSACensusForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submissionId, setSubmissionId] = useState("");
 
-  // Personal Information
-  const [personalInfo, setPersonalInfo] = useState({
+  // Lookup data
+  const [streets, setStreets] = useState([]);
+  const [barangays, setBarangays] = useState([]);
+
+  // Form data matching staging_census table
+  const [formData, setFormData] = useState({
     first_name: "",
     middle_name: "",
     last_name: "",
     suffix: "",
-    gender: "",
-    birth_date: "",
-    birth_place: "",
-    civil_status: "",
-    nationality: "",
-    religion: "",
-    blood_type: "",
-  });
-
-  // Contact Information
-  const [contactInfo, setContactInfo] = useState({
-    contact_number: "",
+    sex: "",
+    birthdate: "",
+    birth_city_municipality: "",
+    birth_province: "",
+    birth_country: "PHILIPPINES",
+    nationality: "FILIPINO",
     email: "",
-  });
-
-  // Address Information
-  const [addressInfo, setAddressInfo] = useState({
+    household_head: false,
     house_number: "",
-    street: "",
-    subdivision: "",
-    barangay: "",
-    municipality: "",
-    province: "",
-    zip_code: "",
+    street_id: "",
+    brgy_id: "1",
+    notes: ""
   });
 
-  // Educational & Employment Information
-  const [educEmployment, setEducEmployment] = useState({
-    highest_education: "",
-    occupation: "",
-    employment_status: "",
-    monthly_income: "",
-  });
+  useEffect(() => {
+    const fetchLookupData = async () => {
+      try {
+        const [streetsRes, barangaysRes] = await Promise.all([
+          axiosInstance.get("/address/streets"),
+          axiosInstance.get("/address/barangays")
+        ]);
+        setStreets(streetsRes.data || []);
+        setBarangays(barangaysRes.data || []);
+      } catch (err) {
+        console.error("Error fetching lookup data:", err);
+        toast.error("Failed to load form data");
+      }
+    };
 
-  // Household Information
-  const [householdInfo, setHouseholdInfo] = useState({
-    relationship_to_head: "",
-    is_household_head: false,
-    household_size: "",
-  });
+    fetchLookupData();
+  }, []);
 
-  // Voter & ID Information
-  const [voterInfo, setVoterInfo] = useState({
-    is_registered_voter: false,
-    voter_id: "",
-    philhealth_member: false,
-    philhealth_number: "",
-    sss_member: false,
-    sss_number: "",
-    tin_number: "",
-  });
-
-  // Handlers
-  const handlePersonalChange = (e) => {
+  const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setPersonalInfo((prev) => ({
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : ["text", "email", "textarea"].includes(type)
+          ? value.toUpperCase() // <-- auto-uppercase for text-like fields
+          : value,
     }));
   };
 
-  const handleContactChange = (e) => {
-    const { name, value } = e.target;
-    setContactInfo((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleAddressChange = (e) => {
-    const { name, value } = e.target;
-    setAddressInfo((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleEducEmploymentChange = (e) => {
-    const { name, value } = e.target;
-    setEducEmployment((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleHouseholdChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setHouseholdInfo((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleVoterChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setVoterInfo((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
+  //NO BACKEND CONNECTION YET
   // Submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // Compile all census data
-      const censusData = {
-        personal_info: {
-          ...personalInfo,
-          birth_date: personalInfo.birth_date || null,
-        },
-        contact_info: contactInfo,
-        address_info: addressInfo,
-        education_employment: educEmployment,
-        household_info: householdInfo,
-        voter_id_info: voterInfo,
-        submitted_at: new Date().toISOString(),
-      };
-
-      // For now, just log the data (no backend connection yet)
-      console.log("PSA Census Data:", censusData);
-
-      // Simulate submission delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      const response = await axiosInstance.post("/census/submit", formData);
+      
       toast.success("Census form submitted successfully!");
+      setSubmissionId(response.data.submission_id);
       setIsSubmitted(true);
-
-      // TODO: Connect to separate database for census data
-      // await AxiosInstance.post("/census/submit", censusData);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to submit census form");
+      toast.error(err.response?.data?.message || "Failed to submit census form");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const resetForm = () => {
+    setIsSubmitted(false);
+    setSubmissionId("");
+    setFormData({
+      first_name: "",
+      middle_name: "",
+      last_name: "",
+      suffix: "",
+      sex: "",
+      birthdate: "",
+      birth_city_municipality: "",
+      birth_province: "",
+      birth_country: "",
+      nationality: "",
+      email: "",
+      household_head: false,
+      house_number: "",
+      street_id: "",
+      brgy_id: "",
+      notes: ""
+    });
   };
 
   // Success screen after submission
@@ -164,57 +119,14 @@ const PSACensusForm = () => {
             <h1 className="text-2xl font-bold mb-4 text-green-600">
               Census Form Submitted Successfully!
             </h1>
-            <p className="text-gray-600 mb-6">
-              Thank you for completing the PSA Census Form. Your data has been recorded and will be used for verification purposes during registration.
+            <p className="text-gray-600 mb-2">
+              Thank you for completing the PSA Census Form.
+            </p>
+            <p className="text-gray-500 text-sm mb-6">
+              Your submission ID: <span className="font-mono font-bold">{submissionId}</span>
             </p>
             <button
-              onClick={() => {
-                setIsSubmitted(false);
-                // Reset all forms
-                setPersonalInfo({
-                  first_name: "",
-                  middle_name: "",
-                  last_name: "",
-                  suffix: "",
-                  gender: "",
-                  birth_date: "",
-                  birth_place: "",
-                  civil_status: "",
-                  nationality: "",
-                  religion: "",
-                  blood_type: "",
-                });
-                setContactInfo({ contact_number: "", email: "" });
-                setAddressInfo({
-                  house_number: "",
-                  street: "",
-                  subdivision: "",
-                  barangay: "",
-                  municipality: "",
-                  province: "",
-                  zip_code: "",
-                });
-                setEducEmployment({
-                  highest_education: "",
-                  occupation: "",
-                  employment_status: "",
-                  monthly_income: "",
-                });
-                setHouseholdInfo({
-                  relationship_to_head: "",
-                  is_household_head: false,
-                  household_size: "",
-                });
-                setVoterInfo({
-                  is_registered_voter: false,
-                  voter_id: "",
-                  philhealth_member: false,
-                  philhealth_number: "",
-                  sss_member: false,
-                  sss_number: "",
-                  tin_number: "",
-                });
-              }}
+              onClick={resetForm}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
             >
               Submit Another Response
@@ -235,437 +147,225 @@ const PSACensusForm = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Section 1: Personal Information */}
-          <div>
-            <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
+          <fieldset className="border-2 border-gray-300 rounded-2xl p-5">
+            <legend className="text-xl font-semibold px-2 flex items-center gap-2">
               <span className="bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">1</span>
               Personal Information
-            </h2>
-            <div className="bg-white/70 backdrop-blur-lg border-2 border-gray-800/30 rounded-2xl p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            </legend>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
               <TextInput
                 label="First Name"
                 name="first_name"
-                value={personalInfo.first_name}
-                onChange={handlePersonalChange}
+                value={formData.first_name}
+                onChange={handleChange}
                 required
               />
               <TextInput
                 label="Middle Name"
                 name="middle_name"
-                value={personalInfo.middle_name}
-                onChange={handlePersonalChange}
+                value={formData.middle_name}
+                onChange={handleChange}
               />
               <TextInput
                 label="Last Name"
                 name="last_name"
-                value={personalInfo.last_name}
-                onChange={handlePersonalChange}
+                value={formData.last_name}
+                onChange={handleChange}
                 required
               />
               <TextInput
-                label="Suffix (Jr., Sr., III, etc.)"
+                label="Suffix"
                 name="suffix"
-                value={personalInfo.suffix}
-                onChange={handlePersonalChange}
+                value={formData.suffix}
+                onChange={handleChange}
+                placeholder="Jr., Sr., III, etc."
               />
 
               <div>
-                <label className="block text-sm font-medium mb-1">Gender <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium mb-1">
+                  Sex <span className="text-red-500">*</span>
+                </label>
                 <select
-                  name="gender"
-                  value={personalInfo.gender}
-                  onChange={handlePersonalChange}
+                  name="sex"
+                  value={formData.sex}
+                  onChange={handleChange}
                   className="w-full border rounded px-3 py-2"
                   required
                 >
-                  <option value="">Select Gender</option>
-                  <option value="MALE">Male</option>
-                  <option value="FEMALE">Female</option>
+                  <option value="">Select Sex</option>
+                  <option value="MALE">MALE</option>
+                  <option value="FEMALE">FEMALE</option>
                 </select>
               </div>
 
               <TextInput
                 label="Birth Date"
-                name="birth_date"
+                name="birthdate"
                 type="date"
-                value={personalInfo.birth_date}
-                onChange={handlePersonalChange}
+                value={formData.birthdate}
+                onChange={handleChange}
                 required
               />
-
-              <TextInput
-                label="Place of Birth"
-                name="birth_place"
-                value={personalInfo.birth_place}
-                onChange={handlePersonalChange}
-                required
-              />
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Civil Status <span className="text-red-500">*</span></label>
-                <select
-                  name="civil_status"
-                  value={personalInfo.civil_status}
-                  onChange={handlePersonalChange}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                >
-                  <option value="">Select Civil Status</option>
-                  <option value="SINGLE">Single</option>
-                  <option value="MARRIED">Married</option>
-                  <option value="WIDOWED">Widowed</option>
-                  <option value="SEPARATED">Separated</option>
-                  <option value="DIVORCED">Divorced</option>
-                  <option value="ANNULLED">Annulled</option>
-                </select>
-              </div>
 
               <TextInput
                 label="Nationality"
                 name="nationality"
-                value={personalInfo.nationality}
-                onChange={handlePersonalChange}
+                value={formData.nationality}
+                onChange={handleChange}
                 required
               />
-
-              <TextInput
-                label="Religion"
-                name="religion"
-                value={personalInfo.religion}
-                onChange={handlePersonalChange}
-              />
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Blood Type</label>
-                <select
-                  name="blood_type"
-                  value={personalInfo.blood_type}
-                  onChange={handlePersonalChange}
-                  className="w-full border rounded px-3 py-2"
-                >
-                  <option value="">Select Blood Type</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                </select>
-              </div>
             </div>
-          </div>
+          </fieldset>
 
-          {/* Section 2: Contact Information */}
-          <div>
-            <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
+          {/* Section 2: Place of Birth */}
+          <fieldset className="border-2 border-gray-300 rounded-2xl p-5">
+            <legend className="text-xl font-semibold px-2 flex items-center gap-2">
               <span className="bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">2</span>
-              Contact Information
-            </h2>
-            <div className="bg-white/70 backdrop-blur-lg border-2 border-gray-800/30 rounded-2xl p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              Place of Birth
+            </legend>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-3">
               <TextInput
-                label="Contact Number"
-                name="contact_number"
-                value={contactInfo.contact_number}
-                onChange={handleContactChange}
-                placeholder="e.g., 09123456789"
-                required
-              />
-              <TextInput
-                label="Email Address"
-                name="email"
-                type="email"
-                value={contactInfo.email}
-                onChange={handleContactChange}
-                placeholder="e.g., juan@email.com"
-              />
-            </div>
-          </div>
-
-          {/* Section 3: Address Information */}
-          <div>
-            <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-              <span className="bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">3</span>
-              Address Information
-            </h2>
-            <div className="bg-white/70 backdrop-blur-lg border-2 border-gray-800/30 rounded-2xl p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <TextInput
-                label="House/Unit/Lot Number"
-                name="house_number"
-                value={addressInfo.house_number}
-                onChange={handleAddressChange}
-                required
-              />
-              <TextInput
-                label="Street"
-                name="street"
-                value={addressInfo.street}
-                onChange={handleAddressChange}
-                required
-              />
-              <TextInput
-                label="Subdivision/Village"
-                name="subdivision"
-                value={addressInfo.subdivision}
-                onChange={handleAddressChange}
-              />
-              <TextInput
-                label="Barangay"
-                name="barangay"
-                value={addressInfo.barangay}
-                onChange={handleAddressChange}
-                required
-              />
-              <TextInput
-                label="Municipality/City"
-                name="municipality"
-                value={addressInfo.municipality}
-                onChange={handleAddressChange}
+                label="City/Municipality"
+                name="birth_city_municipality"
+                value={formData.birth_city_municipality}
+                onChange={handleChange}
                 required
               />
               <TextInput
                 label="Province"
-                name="province"
-                value={addressInfo.province}
-                onChange={handleAddressChange}
+                name="birth_province"
+                value={formData.birth_province}
+                onChange={handleChange}
                 required
               />
               <TextInput
-                label="ZIP Code"
-                name="zip_code"
-                value={addressInfo.zip_code}
-                onChange={handleAddressChange}
+                label="Country"
+                name="birth_country"
+                value={formData.birth_country}
+                onChange={handleChange}
+                required
               />
             </div>
-          </div>
+          </fieldset>
 
-          {/* Section 4: Education & Employment */}
-          <div>
-            <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-              <span className="bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">4</span>
-              Education & Employment
-            </h2>
-            <div className="bg-white/70 backdrop-blur-lg border-2 border-gray-800/30 rounded-2xl p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Highest Educational Attainment <span className="text-red-500">*</span></label>
-                <select
-                  name="highest_education"
-                  value={educEmployment.highest_education}
-                  onChange={handleEducEmploymentChange}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                >
-                  <option value="">Select Education Level</option>
-                  <option value="NO_FORMAL_EDUCATION">No Formal Education</option>
-                  <option value="ELEMENTARY_UNDERGRADUATE">Elementary Undergraduate</option>
-                  <option value="ELEMENTARY_GRADUATE">Elementary Graduate</option>
-                  <option value="HIGHSCHOOL_UNDERGRADUATE">High School Undergraduate</option>
-                  <option value="HIGHSCHOOL_GRADUATE">High School Graduate</option>
-                  <option value="SENIOR_HIGH_UNDERGRADUATE">Senior High Undergraduate</option>
-                  <option value="SENIOR_HIGH_GRADUATE">Senior High Graduate</option>
-                  <option value="VOCATIONAL">Vocational/Technical</option>
-                  <option value="COLLEGE_UNDERGRADUATE">College Undergraduate</option>
-                  <option value="COLLEGE_GRADUATE">College Graduate</option>
-                  <option value="POST_GRADUATE">Post Graduate (Masters/PhD)</option>
-                </select>
-              </div>
-
+          {/* Section 3: Contact Information */}
+          <fieldset className="border-2 border-gray-300 rounded-2xl p-5">
+            <legend className="text-xl font-semibold px-2 flex items-center gap-2">
+              <span className="bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">3</span>
+              Contact Information
+            </legend>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
               <TextInput
-                label="Occupation"
-                name="occupation"
-                value={educEmployment.occupation}
-                onChange={handleEducEmploymentChange}
-                placeholder="e.g., Teacher, Engineer, Student, N/A"
+                label="Email Address"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="e.g., juan@email.com"
+              />
+            </div>
+          </fieldset>
+
+          {/* Section 4: Address Information */}
+          <fieldset className="border-2 border-gray-300 rounded-2xl p-5">
+            <legend className="text-xl font-semibold px-2 flex items-center gap-2">
+              <span className="bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">4</span>
+              Address Information
+            </legend>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-3">
+              <TextInput
+                label="House/Unit/Lot Number"
+                name="house_number"
+                value={formData.house_number}
+                onChange={handleChange}
+                required
               />
 
               <div>
-                <label className="block text-sm font-medium mb-1">Employment Status <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium mb-1">
+                  Street <span className="text-red-500">*</span>
+                </label>
                 <select
-                  name="employment_status"
-                  value={educEmployment.employment_status}
-                  onChange={handleEducEmploymentChange}
+                  name="street_id"
+                  value={formData.street_id}
+                  onChange={handleChange}
                   className="w-full border rounded px-3 py-2"
                   required
                 >
-                  <option value="">Select Employment Status</option>
-                  <option value="EMPLOYED">Employed</option>
-                  <option value="SELF_EMPLOYED">Self-Employed</option>
-                  <option value="UNEMPLOYED">Unemployed</option>
-                  <option value="STUDENT">Student</option>
-                  <option value="RETIRED">Retired</option>
-                  <option value="OFW">OFW (Overseas Filipino Worker)</option>
-                  <option value="HOMEMAKER">Homemaker</option>
+                  <option value="">Select Street</option>
+                  {streets.map((street) => (
+                    <option key={street.street_id} value={street.street_id}>
+                      {street.street_name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Monthly Income (PHP)</label>
+                <label className="block text-sm font-medium mb-1">
+                  Barangay <span className="text-red-500">*</span>
+                </label>
                 <select
-                  name="monthly_income"
-                  value={educEmployment.monthly_income}
-                  onChange={handleEducEmploymentChange}
+                  name="brgy_id"
+                  value={formData.brgy_id}
+                  onChange={handleChange}
                   className="w-full border rounded px-3 py-2"
+                  required
                 >
-                  <option value="">Select Income Range</option>
-                  <option value="NO_INCOME">No Income</option>
-                  <option value="BELOW_10000">Below ₱10,000</option>
-                  <option value="10000_20000">₱10,000 - ₱20,000</option>
-                  <option value="20001_40000">₱20,001 - ₱40,000</option>
-                  <option value="40001_60000">₱40,001 - ₱60,000</option>
-                  <option value="60001_100000">₱60,001 - ₱100,000</option>
-                  <option value="ABOVE_100000">Above ₱100,000</option>
+                  <option value="">Select Barangay</option>
+                  {barangays.map((brgy) => (
+                    <option key={brgy.brgy_id} value={brgy.brgy_id}>
+                      {brgy.barangay_name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
-          </div>
+          </fieldset>
 
           {/* Section 5: Household Information */}
-          <div>
-            <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
+          <fieldset className="border-2 border-gray-300 rounded-2xl p-5">
+            <legend className="text-xl font-semibold px-2 flex items-center gap-2">
               <span className="bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">5</span>
               Household Information
-            </h2>
-            <div className="bg-white/70 backdrop-blur-lg border-2 border-gray-800/30 rounded-2xl p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2 flex items-center space-x-2">
+            </legend>
+            <div className="grid grid-cols-1 gap-4 mt-3">
+              <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
-                  id="is_household_head"
-                  name="is_household_head"
-                  checked={householdInfo.is_household_head}
-                  onChange={handleHouseholdChange}
+                  id="household_head"
+                  name="household_head"
+                  checked={formData.household_head}
+                  onChange={handleChange}
+                  className="h-4 w-4"
                 />
-                <label htmlFor="is_household_head">I am the Head of Household</label>
+                <label htmlFor="household_head" className="text-sm font-medium">
+                  I am the Head of Household
+                </label>
               </div>
+            </div>
+          </fieldset>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Relationship to Household Head <span className="text-red-500">*</span></label>
-                <select
-                  name="relationship_to_head"
-                  value={householdInfo.relationship_to_head}
-                  onChange={handleHouseholdChange}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                  disabled={householdInfo.is_household_head}
-                >
-                  <option value="">Select Relationship</option>
-                  <option value="HEAD">Head</option>
-                  <option value="SPOUSE">Spouse</option>
-                  <option value="SON">Son</option>
-                  <option value="DAUGHTER">Daughter</option>
-                  <option value="FATHER">Father</option>
-                  <option value="MOTHER">Mother</option>
-                  <option value="BROTHER">Brother</option>
-                  <option value="SISTER">Sister</option>
-                  <option value="GRANDPARENT">Grandparent</option>
-                  <option value="GRANDCHILD">Grandchild</option>
-                  <option value="IN_LAW">In-Law</option>
-                  <option value="RELATIVE">Other Relative</option>
-                  <option value="NON_RELATIVE">Non-Relative</option>
-                  <option value="BOARDER">Boarder</option>
-                </select>
-              </div>
-
-              <TextInput
-                label="Number of Household Members"
-                name="household_size"
-                type="number"
-                min="1"
-                value={householdInfo.household_size}
-                onChange={handleHouseholdChange}
-                placeholder="e.g., 5"
-                required
+          {/* Section 6: Additional Notes */}
+          <fieldset className="border-2 border-gray-300 rounded-2xl p-5">
+            <legend className="text-xl font-semibold px-2 flex items-center gap-2">
+              <span className="bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">6</span>
+              Additional Notes
+            </legend>
+            <div className="mt-3">
+              <label className="block text-sm font-medium mb-1">
+                Notes (Optional)
+              </label>
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                rows={3}
+                className="w-full border rounded px-3 py-2"
+                placeholder="Any additional information..."
               />
             </div>
-          </div>
-
-          {/* Section 6: Voter & Government IDs */}
-          <div>
-            <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-              <span className="bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm">6</span>
-              Voter Registration & Government IDs
-            </h2>
-            <div className="bg-white/70 backdrop-blur-lg border-2 border-gray-800/30 rounded-2xl p-5 space-y-4">
-              {/* Voter */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="is_registered_voter"
-                    name="is_registered_voter"
-                    checked={voterInfo.is_registered_voter}
-                    onChange={handleVoterChange}
-                  />
-                  <label htmlFor="is_registered_voter">Registered Voter</label>
-                </div>
-                {voterInfo.is_registered_voter && (
-                  <TextInput
-                    label="Voter's ID Number"
-                    name="voter_id"
-                    value={voterInfo.voter_id}
-                    onChange={handleVoterChange}
-                    placeholder="(Optional)"
-                  />
-                )}
-              </div>
-
-              {/* PhilHealth */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="philhealth_member"
-                    name="philhealth_member"
-                    checked={voterInfo.philhealth_member}
-                    onChange={handleVoterChange}
-                  />
-                  <label htmlFor="philhealth_member">PhilHealth Member</label>
-                </div>
-                {voterInfo.philhealth_member && (
-                  <TextInput
-                    label="PhilHealth Number"
-                    name="philhealth_number"
-                    value={voterInfo.philhealth_number}
-                    onChange={handleVoterChange}
-                    placeholder="(Optional)"
-                  />
-                )}
-              </div>
-
-              {/* SSS */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="sss_member"
-                    name="sss_member"
-                    checked={voterInfo.sss_member}
-                    onChange={handleVoterChange}
-                  />
-                  <label htmlFor="sss_member">SSS Member</label>
-                </div>
-                {voterInfo.sss_member && (
-                  <TextInput
-                    label="SSS Number"
-                    name="sss_number"
-                    value={voterInfo.sss_number}
-                    onChange={handleVoterChange}
-                    placeholder="(Optional)"
-                  />
-                )}
-              </div>
-
-              {/* TIN */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <TextInput
-                  label="TIN (Tax Identification Number)"
-                  name="tin_number"
-                  value={voterInfo.tin_number}
-                  onChange={handleVoterChange}
-                  placeholder="(Optional)"
-                />
-              </div>
-            </div>
-          </div>
+          </fieldset>
 
           {/* Data Privacy Notice */}
           <div className="bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-5">
