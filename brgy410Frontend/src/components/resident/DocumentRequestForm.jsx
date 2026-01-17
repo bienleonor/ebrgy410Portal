@@ -9,6 +9,8 @@ const DocumentRequestForm = ({ onSubmit }) => {
   const [purpose, setPurpose] = useState("");
   const [otherPurpose, setOtherPurpose] = useState("");
   const [quantity, setQuantity] = useState(1);
+  
+  const MAX_QUANTITY = 10;
 
   useEffect(() => {
     const fetchCertificateTypes = async () => {
@@ -50,12 +52,24 @@ const DocumentRequestForm = ({ onSubmit }) => {
 
       {/* Quantity */}
       <div className="flex items-baseline bg-DocReq-Pink rounded-4xl">
-        <label className="block mb-1 font-medium pl-7">Quantity</label>
+        <label className="block mb-1 font-medium pl-7">
+          Quantity <span className="text-sm text-gray-600">(Max: {MAX_QUANTITY})</span>
+        </label>
         <input
           type="number"
           min="1"
+          max={MAX_QUANTITY}
           value={quantity}
-          onChange={(e) => setQuantity(parseInt(e.target.value, 10))}
+          onChange={(e) => {
+            const value = parseInt(e.target.value, 10);
+            if (value >= 1 && value <= MAX_QUANTITY) {
+              setQuantity(value);
+            } else if (value > MAX_QUANTITY) {
+              setQuantity(MAX_QUANTITY);
+            } else {
+              setQuantity(1);
+            }
+          }}
           className="w-200 border px-3 py-2 ml-auto rounded-4xl h-15 bg-white text-black/70"
         />
       </div>

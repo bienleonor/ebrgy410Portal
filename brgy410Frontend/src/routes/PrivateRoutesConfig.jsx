@@ -1,6 +1,7 @@
 import ProtectedRoute from '../components/common/ProtectedRoute';
 
 import AdminDashboard from '../pages/adminPage/AdminDashboard';
+import AdminStatistics from '../pages/adminPage/AdminStatistics';
 import AdminLayout from '../components/layout/AdminLayout';
 import ResidentLayout from '../components/layout/ResidentLayout';
 import ResidentDashboard from '../pages/userPages/ResidentDashboard';
@@ -25,6 +26,7 @@ const privateRoutesConfig = [
         element: <AdminLayout />,
         children:[
           { path: '/admin/dashboard', element: <AdminDashboard /> },
+          { path: '/admin/statistics', element: <AdminStatistics /> },
           { path: '/admin/requests', element: <AdminRequestList /> },
           { path: '/admin/residents', element: <ResidentListPage /> },
           { path: '/admin/manage-official', element: <ManageOfficial /> },

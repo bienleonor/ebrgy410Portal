@@ -4,6 +4,16 @@ import AxiosInstance from "../../utils/AxiosInstance";
 import toast from "react-hot-toast";
 import { UserPlus, Eye, Edit, UserX, Search, History } from "lucide-react";
 
+const REMARK_OPTIONS = [
+  "Elected",
+  "Re-elected",
+  "Term Ended",
+  "Suspended",
+  "Resigned",
+  "Promoted",
+  "Other"
+];
+
 export default function BrgyOfficialsManagement() {
   const [officials, setOfficials] = useState([]);
   const [residents, setResidents] = useState([]);
@@ -453,13 +463,18 @@ export default function BrgyOfficialsManagement() {
               {/* Remarks */}
               <div>
                 <label className="block mb-1 font-medium">Remarks</label>
-                <textarea
+                <select
                   value={form.remark}
                   onChange={(e) => setForm({ ...form, remark: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg p-2"
-                  rows="3"
-                  placeholder="Optional notes..."
-                />
+                >
+                  <option value="">-- Select Remark --</option>
+                  {REMARK_OPTIONS.map((remark) => (
+                    <option key={remark} value={remark}>
+                      {remark}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Buttons */}
@@ -581,12 +596,18 @@ export default function BrgyOfficialsManagement() {
               {/* Remarks */}
               <div>
                 <label className="block mb-1 font-medium">Remarks</label>
-                <textarea
+                <select
                   value={editForm.remark}
                   onChange={(e) => setEditForm({ ...editForm, remark: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg p-2"
-                  rows="3"
-                />
+                >
+                  <option value="">-- Select Remark --</option>
+                  {REMARK_OPTIONS.map((remark) => (
+                    <option key={remark} value={remark}>
+                      {remark}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Buttons */}

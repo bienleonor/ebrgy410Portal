@@ -28,12 +28,8 @@ export const createBrgyOfficial = async (data) => {
     await conn.execute(
       `UPDATE users 
        SET role_id = 2 
-       WHERE user_id = (
-         SELECT user_id 
-         FROM residents 
-         WHERE verified_id = ?
-       )`,
-      [data.verified_id]  // Use the verified_id from the request body
+       WHERE verified_id = ?`,
+      [data.verified_id]
     );
 
     // Insert into brgy_officials table with checks for undefined
@@ -47,7 +43,7 @@ export const createBrgyOfficial = async (data) => {
         data.end_term,
         data.profile_image || null,  // Handle undefined profile_image
         data.stat_id || null,        // Handle undefined stat_id
-        data.remark || null          // Handle undefined remark
+        data.remark
       ]
     );
 
@@ -203,10 +199,10 @@ export const updateBrgyOfficial = async (id, data) => {
     const statusDetails = await allStatus.getStatusById(stat_id);
     const status_name = statusDetails?.status || null;
 
-    // Fetch user_id based on verified_id
+    // Fetch user_id based on verified_id from users table
     const [[user]] = await conn.execute(
-      `SELECT user_id FROM residents WHERE verified_id = ?`,
-      [verified_id]  // Fetch the user_id using verified_id from the residents table
+      `SELECT user_id FROM users WHERE verified_id = ?`,
+      [verified_id]
     );
 
     if (!user) throw new Error("User not found");
