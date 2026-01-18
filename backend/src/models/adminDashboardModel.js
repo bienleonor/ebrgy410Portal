@@ -1,4 +1,5 @@
 import pool from "../config/pool.js";
+import lookupModel from "./lookupModel.js";
 
 export const DashboardModel = {
   async countHouseholds() {
@@ -96,14 +97,28 @@ export const DashboardModel = {
   },
 
   async getCertificateStatusDistribution() {
-    const [rows] = await pool.query(`
+    // Get all certificate statuses from lookup
+    const statuses = await lookupModel.getCertificateStatus();
+    
+    // Get counts for each status
+    const [counts] = await pool.query(`
       SELECT 
-        status,
+        status_id,
         COUNT(*) AS count
       FROM certificate_requests
-      GROUP BY status
+      GROUP BY status_id
     `);
-    return rows;
+    
+    // Map counts to status names
+    const result = statuses.map(status => {
+      const countData = counts.find(c => c.status_id === status.stat_id);
+      return {
+        status: status.status_name,
+        count: countData ? countData.count : 0
+      };
+    });
+    
+    return result;
   },
 
   async getVotersList() {

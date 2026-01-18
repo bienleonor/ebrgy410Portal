@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { LogoCardWrapper } from "../../components/common/cards/LogoCardWrapper";
-import { Eye, Edit, Trash2, UserPlus, X } from "lucide-react";
+import { Eye, Edit, Trash2, UserPlus, X, Save } from "lucide-react";
 import axiosInstance from "../../utils/AxiosInstance";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -14,18 +14,8 @@ export default function ResidentListPage() {
 
   const [selected, setSelected] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-
-  const [formData, setFormData] = useState({
-    first_name: "",
-    middle_name: "",
-    last_name: "",
-    gender: "",
-    address_id: "",
-    contact_number: "",
-    is_voter: 0,
-  });
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editData, setEditData] = useState({});
 
   const navigate = useNavigate();
 
@@ -64,44 +54,13 @@ export default function ResidentListPage() {
     setFiltered(result);
   }, [search, residents, voterFilter]);
 
-  // === INPUT HANDLER ===
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const resetForm = () =>
-    setFormData({
-      first_name: "",
-      middle_name: "",
-      last_name: "",
-      gender: "",
-      address_id: "",
-      contact_number: "",
-      is_voter: 0,
-    });
-
-  // === ADD ===
-  const handleAddResident = async (e) => {
-    e.preventDefault();
-    try {
-      await axiosInstance.post("/admin/residents", formData);
-      toast.success("Resident added successfully!");
-      setShowAddModal(false);
-      resetForm();
-      fetchResidents();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to add resident");
-    }
-  };
-
   // === UPDATE ===
-  const handleEditResident = async (e) => {
-    e.preventDefault();
+  const handleEditResident = async () => {
     try {
-      await axiosInstance.put(`/admin/residents/${selected.resident_id}`, formData);
+      await axiosInstance.put(`/admin/residents/${selected.verified_id}`, editData);
       toast.success("Resident updated successfully!");
-      setShowEditModal(false);
+      setIsEditMode(false);
+      setShowViewModal(false);
       fetchResidents();
     } catch (err) {
       console.error(err);
@@ -122,19 +81,18 @@ export default function ResidentListPage() {
     }
   };
 
-  // === EDIT MODAL OPEN ===
-  const openEditModal = (res) => {
-    setSelected(res);
-    setFormData({
-      first_name: res.first_name,
-      middle_name: res.middle_name || "",
-      last_name: res.last_name,
-      gender: res.gender,
-      address_id: res.address_id || "",
-      contact_number: res.contact_number || "",
-      is_voter: res.is_voter || 0,
+  // Helper functions
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
     });
-    setShowEditModal(true);
+  };
+
+  const handleEditChange = (field, value) => {
+    setEditData({ ...editData, [field]: value });
   };
 
   return (
@@ -193,7 +151,7 @@ export default function ResidentListPage() {
                     <td className="p-3 font-medium text-gray-900">
                       {res.first_name} {res.middle_name && `${res.middle_name[0]}.`} {res.last_name}
                     </td>
-                    <td className="p-3 text-gray-700">{res.gender}</td>
+                    <td className="p-3 text-gray-700">{res.sex}</td>
                     <td className="p-3 text-gray-700">{res.contact_number || "—"}</td>
                     <td className="p-3 text-gray-700">
                       {res.is_voter === 1 ? (
@@ -208,16 +166,12 @@ export default function ResidentListPage() {
                           className="p-2 rounded-lg bg-green-100 text-green-700 hover:bg-green-200"
                           onClick={() => {
                             setSelected(res);
+                            setEditData(res);
+                            setIsEditMode(false);
                             setShowViewModal(true);
                           }}
                         >
                           <Eye size={18} />
-                        </button>
-                        <button
-                          className="p-2 rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-                          onClick={() => openEditModal(res)}
-                        >
-                          <Edit size={18} />
                         </button>
                         <button
                           className="p-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200"
@@ -241,98 +195,323 @@ export default function ResidentListPage() {
         </div>
       </LogoCardWrapper>
 
-      {/* === VIEW MODAL === */}
+      {/* === VIEW MODAL WITH EDIT MODE === */}
       {showViewModal && selected && (
-        <Modal title="Resident Details" onClose={() => setShowViewModal(false)}>
-          <p><b>Name:</b> {selected.first_name} {selected.middle_name || ""} {selected.last_name}</p>
-          <p><b>Gender:</b> {selected.gender}</p>
-          <p><b>Contact:</b> {selected.contact_number}</p>
-          <p><b>Registered Voter:</b> {selected.is_voter === 1 ? "Yes" : "No"}</p>
-        </Modal>
-      )}
-
-      {/* === ADD / EDIT MODALS === */}
-      {(showAddModal || showEditModal) && (
-        <Modal
-          title={showAddModal ? "Add Resident" : "Edit Resident"}
-          onClose={() => {
-            setShowAddModal(false);
-            setShowEditModal(false);
-          }}
-        >
-          <form
-            onSubmit={showAddModal ? handleAddResident : handleEditResident}
-            className="space-y-4"
-          >
-            <input
-              name="first_name"
-              placeholder="First Name"
-              value={formData.first_name}
-              onChange={handleChange}
-              required
-              className="w-full border p-2 rounded-lg"
-            />
-            <input
-              name="middle_name"
-              placeholder="Middle Name"
-              value={formData.middle_name}
-              onChange={handleChange}
-              className="w-full border p-2 rounded-lg"
-            />
-            <input
-              name="last_name"
-              placeholder="Last Name"
-              value={formData.last_name}
-              onChange={handleChange}
-              required
-              className="w-full border p-2 rounded-lg"
-            />
-            <input
-              name="gender"
-              placeholder="Gender"
-              value={formData.gender}
-              onChange={handleChange}
-              className="w-full border p-2 rounded-lg"
-            />
-            <input
-              name="contact_number"
-              placeholder="Contact Number"
-              value={formData.contact_number}
-              onChange={handleChange}
-              className="w-full border p-2 rounded-lg"
-            />
-
-            <label className="flex items-center gap-2 text-gray-700">
-              <input
-                type="checkbox"
-                name="is_voter"
-                checked={formData.is_voter === 1}
-                onChange={(e) => setFormData({ ...formData, is_voter: e.target.checked ? 1 : 0 })}
-                className="w-4 h-4 accent-blue-600"
-              />
-              Registered Voter
-            </label>
-
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAddModal(false);
-                  setShowEditModal(false);
-                }}
-                className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                {showAddModal ? "Add" : "Update"}
-              </button>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-4xl shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {isEditMode ? "Edit Resident Information" : "Resident Details"}
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Verified ID: <span className="font-mono">{selected.verified_id}</span>
+                </p>
+              </div>
+              {!isEditMode && (
+                <button
+                  onClick={() => setIsEditMode(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                >
+                  <Edit size={18} />
+                  Edit Mode
+                </button>
+              )}
             </div>
-          </form>
-        </Modal>
+
+            <div className="p-6 space-y-6">
+              {/* Personal Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">
+                  Personal Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">First Name</label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        value={editData.first_name || ""}
+                        onChange={(e) => handleEditChange("first_name", e.target.value)}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        disabled
+                      />
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.first_name}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Middle Name</label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        value={editData.middle_name || ""}
+                        onChange={(e) => handleEditChange("middle_name", e.target.value)}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        disabled
+                      />
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.middle_name || "N/A"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Last Name</label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        value={editData.last_name || ""}
+                        onChange={(e) => handleEditChange("last_name", e.target.value)}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        disabled
+                      />
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.last_name}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Suffix</label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        value={editData.suffix || ""}
+                        onChange={(e) => handleEditChange("suffix", e.target.value)}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        disabled
+                      />
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.suffix || "N/A"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Sex</label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        value={editData.sex || ""}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-100"
+                        disabled
+                      />
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.sex}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Birthdate</label>
+                    {isEditMode ? (
+                      <input
+                        type="date"
+                        value={editData.birthdate?.split('T')[0] || ""}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-100"
+                        disabled
+                      />
+                    ) : (
+                      <p className="text-gray-900 mt-1">{formatDate(selected.birthdate)}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Nationality</label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        value={editData.nationality || ""}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-100"
+                        disabled
+                      />
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.nationality}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">
+                  Contact & Additional Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Email</label>
+                    {isEditMode ? (
+                      <input
+                        type="email"
+                        value={editData.email || ""}
+                        onChange={(e) => handleEditChange("email", e.target.value)}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.email || "N/A"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Contact Number</label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        value={editData.contact_number || ""}
+                        onChange={(e) => handleEditChange("contact_number", e.target.value)}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.contact_number || "N/A"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Civil Status</label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        value={editData.civil_status || ""}
+                        onChange={(e) => handleEditChange("civil_status", e.target.value)}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.civil_status || "N/A"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Religion</label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        value={editData.religion || ""}
+                        onChange={(e) => handleEditChange("religion", e.target.value)}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.religion || "N/A"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Occupation</label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        value={editData.occupation || ""}
+                        onChange={(e) => handleEditChange("occupation", e.target.value)}
+                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.occupation || "N/A"}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Voter & Status Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">
+                  Voter & Special Status
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Registered Voter</label>
+                    {isEditMode ? (
+                      <label className="flex items-center gap-2 mt-2">
+                        <input
+                          type="checkbox"
+                          checked={editData.registered_voter === 1}
+                          onChange={(e) => handleEditChange("registered_voter", e.target.checked ? 1 : 0)}
+                          className="w-4 h-4 accent-blue-600"
+                        />
+                        <span className="text-sm text-gray-700">Yes</span>
+                      </label>
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.registered_voter === 1 ? "Yes" : "No"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Senior Citizen</label>
+                    {isEditMode ? (
+                      <label className="flex items-center gap-2 mt-2">
+                        <input
+                          type="checkbox"
+                          checked={editData.senior_citizen === 1}
+                          onChange={(e) => handleEditChange("senior_citizen", e.target.checked ? 1 : 0)}
+                          className="w-4 h-4 accent-blue-600"
+                        />
+                        <span className="text-sm text-gray-700">Yes</span>
+                      </label>
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.senior_citizen === 1 ? "Yes" : "No"}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">PWD</label>
+                    {isEditMode ? (
+                      <label className="flex items-center gap-2 mt-2">
+                        <input
+                          type="checkbox"
+                          checked={editData.pwd === 1}
+                          onChange={(e) => handleEditChange("pwd", e.target.checked ? 1 : 0)}
+                          className="w-4 h-4 accent-blue-600"
+                        />
+                        <span className="text-sm text-gray-700">Yes</span>
+                      </label>
+                    ) : (
+                      <p className="text-gray-900 mt-1">{selected.pwd === 1 ? "Yes" : "No"}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Address Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">
+                  Address
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">House/Lot No.</label>
+                    <p className="text-gray-900 mt-1 bg-gray-50 px-3 py-2 rounded">{selected.house_number || "N/A"}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Street</label>
+                    <p className="text-gray-900 mt-1 bg-gray-50 px-3 py-2 rounded">{selected.street_name || "N/A"}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Barangay</label>
+                    <p className="text-gray-900 mt-1 bg-gray-50 px-3 py-2 rounded">{selected.barangay_name || "N/A"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6 rounded-b-2xl flex justify-end gap-3">
+              {isEditMode ? (
+                <>
+                  <button
+                    className="px-5 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 font-medium transition"
+                    onClick={() => {
+                      setIsEditMode(false);
+                      setEditData(selected);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 font-medium transition flex items-center gap-2"
+                    onClick={handleEditResident}
+                  >
+                    <Save size={18} />
+                    Save Changes
+                  </button>
+                </>
+              ) : (
+                <button
+                  className="px-5 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 font-medium transition"
+                  onClick={() => {
+                    setShowViewModal(false);
+                    setSelected(null);
+                  }}
+                >
+                  Close
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

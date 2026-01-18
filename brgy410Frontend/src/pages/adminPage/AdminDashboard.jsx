@@ -26,6 +26,15 @@ export default function AdminDashboard() {
     ageBrackets: [],
   });
 
+  // Certificate statistics
+  const [certificateStats, setCertificateStats] = useState({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    total: 0,
+    released: 0,
+  });
+
   const COLORS = ['#4C8BF5', '#E85D8C'];
 
   // Fetch all counts
@@ -56,6 +65,17 @@ export default function AdminDashboard() {
           genderDistribution: res.data.genderDistribution,
           ageBrackets: res.data.ageBrackets,
         });
+
+        // Calculate certificate statistics from status distribution
+        const statusDist = res.data.certificateStatusDistribution || [];
+        const certStats = {
+          pending: statusDist.find(s => s.status?.toUpperCase() === 'PENDING')?.count || 0,
+          approved: statusDist.find(s => s.status?.toUpperCase() === 'APPROVED')?.count || 0,
+          rejected: statusDist.find(s => s.status?.toUpperCase() === 'REJECTED')?.count || 0,
+          released: statusDist.find(s => s.status?.toUpperCase() === 'RELEASED')?.count || 0,
+          total: statusDist.reduce((sum, s) => sum + (s.count || 0), 0),
+        };
+        setCertificateStats(certStats);
       } catch (error) {
         console.error("Overview error:", error);
       } finally {
@@ -155,6 +175,79 @@ export default function AdminDashboard() {
                   <Bar dataKey="count" fill="#4C8BF5" />
                 </BarChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Certificate Requests Overview Section */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <FileText size={28} className="text-pink-600" />
+              Certificate Requests Overview
+            </h2>
+            <p className="text-gray-600 text-sm">Track and manage certificate requests</p>
+          </div>
+          <button
+            onClick={() => navigate('/admin/request-list')}
+            className="px-6 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition-colors"
+          >
+            View All Requests
+          </button>
+        </div>
+
+        {statsLoading ? (
+          <div className="text-center py-8 text-gray-500">Loading certificate data...</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-700">Total Requests</p>
+                  <p className="text-3xl font-bold text-blue-900 mt-1">{certificateStats.total}</p>
+                </div>
+                <div className="p-3 bg-blue-200 rounded-lg">
+                  <FileText size={24} className="text-blue-700" />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl border border-yellow-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-yellow-700">Pending</p>
+                  <p className="text-3xl font-bold text-yellow-900 mt-1">{certificateStats.pending}</p>
+                </div>
+                <div className="p-3 bg-yellow-200 rounded-lg">
+                  <FileText size={24} className="text-yellow-700" />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-700">Approved</p>
+                  <p className="text-3xl font-bold text-green-900 mt-1">{certificateStats.approved}</p>
+                </div>
+                <div className="p-3 bg-green-200 rounded-lg">
+                  <FileText size={24} className="text-green-700" />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border border-red-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-red-700">Rejected</p>
+                  <p className="text-3xl font-bold text-red-900 mt-1">{certificateStats.rejected}</p>
+                </div>
+                <div className="p-3 bg-red-200 rounded-lg">
+                  <FileText size={24} className="text-red-700" />
+                </div>
+              </div>
             </div>
           </div>
         )}

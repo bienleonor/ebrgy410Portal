@@ -5,7 +5,8 @@ import {
   createCertificateRequest,
   updateCertificateStatus,
   getMyCertificateRequests,
-  getAllCertificateRequests
+  getAllCertificateRequests,
+  releaseCertificate
 } from "../controllers/certificateRequestController.js";
 
 const router = express.Router();
@@ -56,6 +57,22 @@ router.put(
     ],
   }),
   updateCertificateStatus
+);
+
+router.put(
+  "/:cert_req_id/release",
+  authMiddleware,
+  authorizeAccess({
+    roles: ["Admin", "SuperAdmin"],
+    positions: [
+      "Chairman/Chairwoman",
+      "Secretary",
+      "Treasurer",
+      "Councilor/Kagawad",
+      "Staff",
+    ],
+  }),
+  releaseCertificate
 );
 
 export default router;

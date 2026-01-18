@@ -11,6 +11,19 @@ export default function AdminRequestList() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDenyModal, setShowDenyModal] = useState(false);
   const [denyReason, setDenyReason] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [statuses, setStatuses] = useState([]);
+
+  // 🧠 Fetch certificate statuses
+  const fetchStatuses = async () => {
+    try {
+      const { data } = await axiosInstance.get("/lookup/certificate-status");
+      setStatuses(data);
+    } catch (err) {
+      console.error("Error fetching statuses:", err);
+    }
+  };
 
   // 🧠 Fetch all certificate requests
   const fetchRequests = async () => {
@@ -27,28 +40,71 @@ export default function AdminRequestList() {
   };
 
   useEffect(() => {
+    fetchStatuses();
     fetchRequests();
   }, []);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(requests.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentRequests = requests.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   // 🔹 Approve Request
   const handleApprove = async (id) => {
     try {
       setIsGenerating(true); // 🔥 Show popup + disable UI
 
+      // Get Approved status ID from lookup
+      const approvedStatus = statuses.find(s => s.status_name.toUpperCase() === "APPROVED");
+      if (!approvedStatus) {
+        toast.error("Approved status not found");
+        setIsGenerating(false);
+        return;
+      }
+
       await axiosInstance.put(`/certificates/${id}/status`, {
-        status: "Approved",
-        remarks: "Approved by Admin",
+        statusId: approvedStatus.stat_id,
+        denied_reason: null,
       });
 
-      toast.success("Document generated successfully!");
+      toast.success("Document is being generated...");
       setShowViewModal(false);
       setSelectedRequest(null);
-      fetchRequests();
+      setCurrentPage(1); // Reset to first page
+      
+      // Poll for attachment completion
+      let pollCount = 0;
+      const maxPolls = 30; // Poll for up to 30 seconds
+      const pollInterval = setInterval(async () => {
+        pollCount++;
+        
+        // Fetch fresh data and check if attachment exists
+        const { data } = await axiosInstance.get("/certificates/requests");
+        const updatedRequest = data.find(r => r.cert_req_id === id);
+        
+        if (updatedRequest?.has_attachment === 1 || pollCount >= maxPolls) {
+          clearInterval(pollInterval);
+          setIsGenerating(false);
+          setRequests(data); // Update the list with fresh data
+          if (updatedRequest?.has_attachment === 1) {
+            toast.success("Document ready for download!");
+          } else {
+            toast.error("Document generation timed out. Please refresh the page.");
+          }
+        } else {
+          setRequests(data); // Update list during polling
+        }
+      }, 1000);
+      
     } catch (err) {
       console.error(err);
       toast.error("Failed to approve request.");
-    } finally {
-      setIsGenerating(false); // 🔥 Hide popup
+      setIsGenerating(false);
     }
   };
 
@@ -59,8 +115,10 @@ export default function AdminRequestList() {
   };
 
   const confirmDeny = async () => {
-    if (!denyReason.trim()) {
-      toast.error("Please provide a denial reason.");
+    // Get Rejected status from lookup
+    const rejectedStatus = statuses.find(s => s.status_name.toUpperCase() === "REJECTED");
+    if (!rejectedStatus) {
+      toast.error("Rejected status not found");
       return;
     }
 
@@ -68,7 +126,7 @@ export default function AdminRequestList() {
       await axiosInstance.put(
         `/certificates/${selectedRequest.cert_req_id}/status`,
         {
-          status: "Rejected",
+          statusId: rejectedStatus.stat_id,
           denied_reason: denyReason,
         }
       );
@@ -76,10 +134,36 @@ export default function AdminRequestList() {
       setShowDenyModal(false);
       setDenyReason("");
       setSelectedRequest(null);
+      setCurrentPage(1); // Reset to first page
       fetchRequests();
     } catch (err) {
       console.error(err);
       toast.error("Failed to deny request.");
+    }
+  };
+
+  // 🔹 Release Certificate
+  const handleRelease = async (id) => {
+    try {
+      // Get Released status from lookup
+      const releasedStatus = statuses.find(s => s.status_name.toUpperCase() === "RELEASED");
+      if (!releasedStatus) {
+        toast.error("Released status not found");
+        return;
+      }
+
+      await axiosInstance.put(`/certificates/${id}/release`, {
+        statusId: releasedStatus.stat_id,
+      });
+
+      toast.success("Certificate released successfully!");
+      setShowViewModal(false);
+      setSelectedRequest(null);
+      setCurrentPage(1); // Reset to first page
+      fetchRequests();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to release certificate.");
     }
   };
 
@@ -144,29 +228,33 @@ export default function AdminRequestList() {
             <table className="w-full text-left border-t border-black/20">
               <thead>
                 <tr className="border-b border-black/20">
+                  <th className="py-2 font-bold text-gray-900">Control Number</th>
                   <th className="py-2 font-bold text-gray-900">Resident</th>
                   <th className="py-2 font-bold text-gray-900">Document</th>
                   <th className="py-2 font-bold text-gray-900">Purpose</th>
                   <th className="py-2 font-bold text-gray-900">Status</th>
                   <th className="py-2 font-bold text-gray-900">Date Submitted</th>
-                  <th className="py-2 font-bold text-gray-900">Action</th>
+                  <th className="py-2 font-bold text-gray-900 text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {requests.map((req) => (
+                {currentRequests.map((req) => (
                   <tr
                     key={req.cert_req_id}
                     className="border-b border-black/10 text-gray-900"
                   >
+                    <td className="py-3">{req.control_number || 'N/A'}</td>
                     <td className="py-3">{req.resident_name}</td>
                     <td className="py-3">{req.certificate_name}</td>
                     <td className="py-3">{req.purpose}</td>
                     <td className="py-3">
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          req.status === "Approved"
+                          req.status?.toUpperCase() === "RELEASED"
                             ? "bg-green-200 text-green-800"
-                            : req.status === "Rejected"
+                            : req.status?.toUpperCase() === "PENDING"
+                            ? "bg-blue-200 text-blue-800"
+                            : req.status?.toUpperCase() === "REJECTED"
                             ? "bg-red-200 text-red-800"
                             : "bg-yellow-200 text-yellow-800"
                         }`}
@@ -192,7 +280,7 @@ export default function AdminRequestList() {
                         View
                       </button>
 
-                      {req.status === "Approved" && (
+                      {req.status?.toUpperCase() === "APPROVED" && req.has_attachment === 1 && (
                         <button
                           className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition"
                           onClick={() => handleDownload(req)}
@@ -205,6 +293,62 @@ export default function AdminRequestList() {
                 ))}
               </tbody>
             </table>
+
+            {/* Pagination Controls */}
+            {requests.length > itemsPerPage && (
+              <div className="flex justify-between items-center mt-6">
+                <div className="text-sm text-gray-600">
+                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, requests.length)} of {requests.length} requests
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    Previous
+                  </button>
+                  
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNumber = index + 1;
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      pageNumber === 1 ||
+                      pageNumber === totalPages ||
+                      (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={pageNumber}
+                          onClick={() => handlePageChange(pageNumber)}
+                          className={`px-4 py-2 rounded-lg transition ${
+                            currentPage === pageNumber
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-200 hover:bg-gray-300"
+                          }`}
+                        >
+                          {pageNumber}
+                        </button>
+                      );
+                    } else if (
+                      pageNumber === currentPage - 2 ||
+                      pageNumber === currentPage + 2
+                    ) {
+                      return <span key={pageNumber} className="px-2">...</span>;
+                    }
+                    return null;
+                  })}
+
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </LogoCardWrapper>
@@ -216,6 +360,7 @@ export default function AdminRequestList() {
             <h2 className="text-xl font-bold mb-4">Request Details</h2>
 
             <div className="space-y-2">
+              <p><b>Control Number:</b> {selectedRequest.control_number || 'N/A'}</p>
               <p><b>Resident:</b> {selectedRequest.resident_name}</p>
               <p><b>Document:</b> {selectedRequest.certificate_name}</p>
               <p><b>Purpose:</b> {selectedRequest.purpose}</p>
@@ -233,7 +378,7 @@ export default function AdminRequestList() {
                 Close
               </button>
 
-              {selectedRequest.status === "Approved" && (
+              {selectedRequest.status?.toUpperCase() === "APPROVED" && selectedRequest.has_attachment === 1 && (
                 <>
                   <button
                     className="px-4 py-2 rounded-lg bg-gray-700 text-white hover:bg-gray-800"
@@ -248,10 +393,23 @@ export default function AdminRequestList() {
                   >
                     Print
                   </button>
+
+                  <button
+                    className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
+                    onClick={() => handleRelease(selectedRequest.cert_req_id)}
+                  >
+                    Release
+                  </button>
                 </>
               )}
 
-              {selectedRequest.status === "Pending" && (
+              {selectedRequest.status?.toUpperCase() === "APPROVED" && selectedRequest.has_attachment !== 1 && (
+                <div className="text-sm text-yellow-600 mt-2">
+                  Document is being generated, please wait...
+                </div>
+              )}
+
+              {selectedRequest.status?.toUpperCase() === "PENDING" && (
                 <>
                   <button
                     className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"

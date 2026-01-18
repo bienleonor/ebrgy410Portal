@@ -9,5 +9,6 @@ router.get("/education-attainments", lookupController.getEducationAttainments);
 router.get("/income-ranges", lookupController.getIncomeRanges);
 router.get("/civil-status-options", lookupController.getCivilStatusOptions);
 router.get("/record-status-options", lookupController.getRecordStatusOptions);
+router.get("/certificate-status", lookupController.getCertificateStatuses);
 
 export default router;

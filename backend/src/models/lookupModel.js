@@ -27,6 +27,11 @@ const lookupModel = {
     return rows;
   },
 
+  async getCertificateStatus() {
+    const [rows] = await pool.query(`SELECT * FROM status WHERE status_type = 'DOCUMENT' ORDER BY stat_id ASC`);
+    return rows;
+  },
+
   async getCivilStatusOptions() {
     const [rows] = await pool.query(`SELECT * FROM status WHERE status_type = 'CIVIL' ORDER BY stat_id ASC`);
     return rows;

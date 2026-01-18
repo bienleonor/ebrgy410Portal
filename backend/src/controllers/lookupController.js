@@ -55,6 +55,16 @@ const lookupController = {
       res.status(500).json({ message: "Failed to fetch record status options" });
     }
   },
+  // Get record status options
+  async getCertificateStatuses(req, res) {
+    try {
+      const options = await lookupModel.getCertificateStatus();
+      res.json(options);
+    } catch (error) {
+      console.error("Error fetching record status options:", error);
+      res.status(500).json({ message: "Failed to fetch record status options" });
+    }
+  },
 };
 
 export default lookupController;
