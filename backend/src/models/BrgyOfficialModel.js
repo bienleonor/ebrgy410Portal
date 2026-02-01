@@ -281,6 +281,23 @@ export const deleteBrgyOfficial = async (id) => {
   return result;
 };
 
+export const getBrgySecretary = async () => {
+  const [rows] = await pool.execute(`
+    SELECT
+     bo.brgy_official_no,
+      bo.verified_id,
+      vc.first_name,
+      vc.middle_name,
+      vc.last_name,
+      p.position_name
+    FROM brgy_officials bo
+    JOIN verified_constituent vc ON bo.verified_id = vc.verified_id
+    JOIN positions p ON bo.position_id = p.position_id
+    WHERE bo.position_id = 3 AND
+       bo.stat_id = 1
+  `)
+  return rows[0] || null;
+}
 
 export const getFullBrgyOfficialById = async (id) => {
   const [rows] = await pool.execute(

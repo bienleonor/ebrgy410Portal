@@ -46,8 +46,8 @@ export default function AdminRegisterResident() {
     const fetchAddressOptions = async () => {
       try {
         const [brgyRes, purokRes] = await Promise.all([
-          axiosInstance.get("/address/barangays"),
-          axiosInstance.get("/address/purok"),
+          AxiosInstance.get("/address/barangays"),
+          AxiosInstance.get("/address/purok"),
         ]);
         setBarangays(brgyRes.data);
         setPuroks(purokRes.data);
@@ -92,7 +92,7 @@ export default function AdminRegisterResident() {
       };
 
       // Step 2️⃣ — Create address (use same path as ResidentProfilePage)
-      const { data: addrData } = await axiosInstance.post(
+      const { data: addrData } = await AxiosInstance.post(
         "/address/addresses",
         cleanedAddress
       );
@@ -118,7 +118,7 @@ export default function AdminRegisterResident() {
         address_id: addressId,
       };
 
-      await axiosInstance.post("/admin/register-with-account", payload);
+      await AxiosInstance.post("/admin/register-with-account", payload);
 
       toast.success("Resident registered successfully!");
 

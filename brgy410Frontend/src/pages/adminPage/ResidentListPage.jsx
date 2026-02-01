@@ -103,7 +103,7 @@ export default function ResidentListPage() {
           <h2 className="text-2xl font-black text-gray-800">Resident Records</h2>
           <button
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-all"
-            onClick={() => navigate("/admin/create-account")} // Redirect instead of opening modal
+            onClick={() => navigate("/psacensus")} // Redirect instead of opening modal
           >
             <UserPlus size={18} /> Add Resident
           </button>

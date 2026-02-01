@@ -4,7 +4,7 @@ import { CertificateTypeModel } from "../models/certificateTypeModel.js";
 import { CertificateAttachmentModel } from "../models/certificateAttachmentModel.js";
 import { CertificateTemplateModel } from "../models/certificateTemplateModel.js";
 import { generateCertificateFromDocx } from "../utils/generateCertificateFromDocx.js";
-import { getBrgyOfficialById, getFullBrgyOfficialById } from "../models/BrgyOfficialModel.js";
+import { getBrgyOfficialById, getBrgySecretary } from "../models/BrgyOfficialModel.js";
 
 
 import pool from "../config/pool.js";
@@ -36,6 +36,7 @@ export async function handleApprovedCertificate(cert_req_id) {
       JOIN verified_constituent vc ON vc.verified_id = bo.verified_id
       JOIN positions p ON p.position_id = bo.position_id
       WHERE bo.position_id = 1
+        AND bo.stat_id = 1
       ORDER BY bo.start_term DESC
       LIMIT 1
     `);
@@ -50,7 +51,7 @@ export async function handleApprovedCertificate(cert_req_id) {
     let signatoryPosition = "";
 
     if (request.processed_by) {
-      const officiating = await getFullBrgyOfficialById(request.processed_by);
+      const officiating = await getBrgySecretary();
 
       if (officiating) {
         signatoryName = `${officiating.first_name} ${officiating.middle_name || ""} ${officiating.last_name}`;

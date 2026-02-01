@@ -31,9 +31,9 @@ const ResidentDashboard = () => {
   // Compute counts
   const counts = {
     total: requests.length,
-    approved: requests.filter(r => r.status === "Approved").length,
-    pending: requests.filter(r => r.status === "Pending").length,
-    rejected: requests.filter(r => r.status === "Rejected").length,
+    approved: requests.filter(r => r.status?.toUpperCase() === "RELEASED").length,
+    pending: requests.filter(r => r.status?.toUpperCase() === "PENDING").length,
+    rejected: requests.filter(r => r.status?.toUpperCase() === "REJECTED").length,
   };
 
   if (!profile) {

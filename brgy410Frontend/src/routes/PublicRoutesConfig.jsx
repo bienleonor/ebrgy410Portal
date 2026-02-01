@@ -4,7 +4,10 @@ import Contacts from '../pages/Contacts';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
 import PSACensusForm from '../pages/PSACensusForm';
-import NotFoundPage from '../pages/NotFoundPage';
+import UnauthorizedPage from '../pages/UnauthorizedPage';
+import ForbiddenPage from '../pages/ForbiddenPage';
+import BadRequestPage from '../pages/BadRequestPage';
+import RequestTimeoutPage from '../pages/RequestTimeoutPage';
 
 const publicRoutesConfig = [
   { path: '/', element: <Homepage /> },
@@ -13,7 +16,10 @@ const publicRoutesConfig = [
   { path: '/contacts', element: <Contacts /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
-  { path: '/unauthorized', element: <NotFoundPage /> },
+  { path: '/401', element: <UnauthorizedPage /> },
+  { path: '/403', element: <ForbiddenPage /> },
+  { path: '/400', element: <BadRequestPage /> },
+  { path: '/408', element: <RequestTimeoutPage /> },
 ];
 
 export default publicRoutesConfig;

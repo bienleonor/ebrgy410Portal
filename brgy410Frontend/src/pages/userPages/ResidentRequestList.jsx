@@ -34,14 +34,14 @@ export default function RequestStatusUnified() {
   // Filtered and count logic
   const filteredData = useMemo(() => {
     if (active === "total") return requests;
-    return requests.filter((r) => r.status.toLowerCase() === active);
+    return requests.filter((r) => r.status?.toUpperCase() === active.toUpperCase());
   }, [active, requests]);
 
   const counts = useMemo(() => ({
     total: requests.length,
-    rejected: requests.filter(r => r.status === "Rejected").length,
-    approved: requests.filter(r => r.status === "Approved").length,
-    pending: requests.filter(r => r.status === "Pending").length,
+    rejected: requests.filter(r => r.status?.toUpperCase() === "REJECTED").length,
+    approved: requests.filter(r => r.status?.toUpperCase() === "APPROVED").length,
+    pending: requests.filter(r => r.status?.toUpperCase() === "PENDING").length,
   }), [requests]);
 
   const activeTab = tabs.find((t) => t.id === active);

@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 
 import publicRoutesConfig from "./routes/PublicRoutesConfig";
 import privateRoutesConfig from "./routes/PrivateRoutesConfig";
+import NotFoundPage from './pages/NotFoundPage';
 
 const renderRoutes = (routes) =>
   routes.map(({ path, element, children }, idx) => (
@@ -20,6 +21,8 @@ const App = () => {
           <Route key={idx} path={path} element={element} />
         ))}
         {renderRoutes(privateRoutesConfig)}
+        {/* Catch-all route for 404 */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AuthProvider>
   );

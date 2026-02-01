@@ -67,7 +67,8 @@ export default function AdminDashboard() {
         });
 
         // Calculate certificate statistics from status distribution
-        const statusDist = res.data.certificateStatusDistribution || [];
+        const statusDist = res.data.certificateStatus || [];
+        console.log("Certificate Status Distribution:", statusDist); // Debug log
         const certStats = {
           pending: statusDist.find(s => s.status?.toUpperCase() === 'PENDING')?.count || 0,
           approved: statusDist.find(s => s.status?.toUpperCase() === 'APPROVED')?.count || 0,
@@ -75,6 +76,7 @@ export default function AdminDashboard() {
           released: statusDist.find(s => s.status?.toUpperCase() === 'RELEASED')?.count || 0,
           total: statusDist.reduce((sum, s) => sum + (s.count || 0), 0),
         };
+        console.log("Calculated Certificate Stats:", certStats); // Debug log
         setCertificateStats(certStats);
       } catch (error) {
         console.error("Overview error:", error);
@@ -201,7 +203,7 @@ export default function AdminDashboard() {
         {statsLoading ? (
           <div className="text-center py-8 text-gray-500">Loading certificate data...</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
               <div className="flex items-center justify-between">
                 <div>
@@ -234,6 +236,18 @@ export default function AdminDashboard() {
                 </div>
                 <div className="p-3 bg-green-200 rounded-lg">
                   <FileText size={24} className="text-green-700" />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-purple-700">Released</p>
+                  <p className="text-3xl font-bold text-purple-900 mt-1">{certificateStats.released}</p>
+                </div>
+                <div className="p-3 bg-purple-200 rounded-lg">
+                  <FileText size={24} className="text-purple-700" />
                 </div>
               </div>
             </div>
